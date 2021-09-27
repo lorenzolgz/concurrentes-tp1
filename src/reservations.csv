@@ -1,0 +1,4 @@
+origin,destination,airline,package
+NQN,AEP,AR,false
+EZE,FCO,LA,true
+AEP,IGR,AR,true

@@ -8,7 +8,7 @@ use crate::record::{RecordManager, Record};
 fn main() -> Result<(), csv::Error> {
     let mut reservations = vec![];
     let mut managers = vec![];
-    let parallel_requests_count = 1;
+    let parallel_requests_count = 5;
 
     let csv = fs::read_to_string("./src/reservations.csv")
         .expect("Something went wrong reading the file");

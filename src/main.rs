@@ -1,15 +1,15 @@
+mod record;
+
+use std::sync::Arc;
+use std_semaphore::Semaphore;
 use std::{fs, thread};
-use serde::Deserialize;
-#[derive(Deserialize)]
-struct Record {
-    origin: String,
-    destination: String,
-    airline: String,
-    package: bool,
-}
+use crate::record::{RecordManager, Record};
 
 fn main() -> Result<(), csv::Error> {
     let mut reservations = vec![];
+    let mut managers = vec![];
+    let parallel_requests_count = 1;
+
     let csv = fs::read_to_string("./src/reservations.csv")
         .expect("Something went wrong reading the file");
 
@@ -17,9 +17,15 @@ fn main() -> Result<(), csv::Error> {
 
     let mut reader = csv::Reader::from_reader(csv.as_bytes());
 
+    let sem = Arc::new(Semaphore::new(parallel_requests_count));
+
     for record in reader.deserialize() {
         let record: Record = record?;
-        reservations.push(thread::spawn(move||print_record(record)));
+        managers.push(RecordManager::new(Arc::from(record), sem.clone()));
+    }
+
+    for manager in managers {
+        reservations.push(thread::spawn(move||manager.trigger_request()));
     }
 
     for reservation in reservations {
@@ -27,14 +33,4 @@ fn main() -> Result<(), csv::Error> {
     }
 
     Ok(())
-}
-
-fn print_record(record: Record) -> () {
-    println!(
-        "[Thread] Origin: {}, Destination: {}, Airline: {}, Package: {}",
-        record.origin,
-        record.destination,
-        record.airline,
-        record.package
-    );
 }

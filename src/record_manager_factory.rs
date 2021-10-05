@@ -35,7 +35,7 @@ impl RecordManagerFactory {
         let semaphore = self.airline_to_semaphore
             .get(&*record.airline)
             .unwrap_or(&self.default_semaphore);
-        RecordManager::new(record, Arc::from((*semaphore).clone()))
+        RecordManager::new(record, (*semaphore).clone())
     }
 
 }

@@ -3,6 +3,7 @@ use std::time::Duration;
 use std_semaphore::Semaphore;
 use std::thread;
 use serde::Deserialize;
+use rand::Rng;
 
 #[derive(Deserialize)]
 pub struct Record {
@@ -29,7 +30,8 @@ impl RecordManager {
     }
     pub fn trigger_request(self) {
         self.sem.acquire();
-        thread::sleep(Duration::from_millis(1_000));
+        let random_millis = rand::thread_rng().gen_range(100..2_000);
+        thread::sleep(Duration::from_millis(random_millis));
         println!(
             "[Thread] Origin: {}, Destination: {}, Airline: {}, Package: {}",
             self.record.origin,

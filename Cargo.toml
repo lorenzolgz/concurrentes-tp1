@@ -9,3 +9,4 @@ edition = "2018"
 serde = { version = "1.0", features = ["derive"] }
 std-semaphore = "0.1"
 csv = "1"
+rand = "0.8"

@@ -1,21 +1,21 @@
+use serde::Deserialize;
 use std::sync::Arc;
 use std::time::Duration;
 use std_semaphore::Semaphore;
 use std::thread;
-use serde::Deserialize;
 use rand::Rng;
 
 #[derive(Deserialize)]
 pub struct Record {
-    origin: String,
-    destination: String,
-    airline: String,
-    package: bool,
+    pub(crate) origin: String,
+    pub(crate) destination: String,
+    pub(crate) airline: String,
+    pub(crate) package: bool,
 }
 
 pub struct RecordManager {
     record: Arc<Record>,
-    sem: Arc<Semaphore>,
+    airline_semaphore: Arc<Semaphore>,
 }
 
 impl RecordManager {
@@ -25,11 +25,11 @@ impl RecordManager {
     ) -> RecordManager {
         RecordManager {
             record,
-            sem
+            airline_semaphore: sem
         }
     }
     pub fn trigger_request(self) {
-        self.sem.acquire();
+        self.airline_semaphore.acquire();
         let random_millis = rand::thread_rng().gen_range(100..2_000);
         thread::sleep(Duration::from_millis(random_millis));
         println!(
@@ -39,6 +39,6 @@ impl RecordManager {
             self.record.airline,
             self.record.package
         );
-        self.sem.release();
+        self.airline_semaphore.release();
     }
 }

@@ -3,12 +3,11 @@ mod record_manager_factory;
 
 use std::sync::Arc;
 use std::{fs, thread};
-use crate::record_manager::Record;
+use crate::record_manager::{Record, RecordManager};
 use crate::record_manager_factory::RecordManagerFactory;
 
 fn main() -> Result<(), csv::Error> {
     let mut reservations = vec![];
-    let mut managers = vec![];
 
     let csv = fs::read_to_string("./src/reservations.csv")
         .expect("Something went wrong reading the file");
@@ -19,10 +18,7 @@ fn main() -> Result<(), csv::Error> {
 
     for record in reader.deserialize() {
         let record: Record = record?;
-        managers.push((&manager_factory).get_manager(Arc::from(record)))
-    }
-
-    for manager in managers {
+        let manager: RecordManager = (&manager_factory).get_manager(Arc::from(record));
         reservations.push(thread::spawn(move||manager.trigger_request()));
     }
 

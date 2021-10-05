@@ -29,7 +29,7 @@ fn main() -> Result<(), csv::Error> {
     }
 
     for reservation in reservations {
-        reservation.join().unwrap();
+        reservation.join().expect("Unable to join on the associated thread");
     }
 
     Ok(())

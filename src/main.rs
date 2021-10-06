@@ -21,7 +21,11 @@ fn main() -> Result<(), csv::Error> {
         let airline: String = record.airline.to_string();
         let optional_manager: Option<RecordManager> = (&manager_factory).get_manager(Arc::from(record));
         if optional_manager.is_some(){
-            reservations.push(thread::spawn(move||optional_manager.unwrap().trigger_request()));
+            reservations.push(thread::spawn( move ||
+                optional_manager
+                    .unwrap()
+                    .trigger_requests_until_success()
+            ));
         } else {
             println!("Unable to find aero semaphore for {}", airline)
         }

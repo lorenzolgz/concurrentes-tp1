@@ -18,8 +18,13 @@ fn main() -> Result<(), csv::Error> {
 
     for record in reader.deserialize() {
         let record: Record = record?;
-        let manager: RecordManager = (&manager_factory).get_manager(Arc::from(record));
-        reservations.push(thread::spawn(move||manager.trigger_request()));
+        let airline: String = record.airline.to_string();
+        let optional_manager: Option<RecordManager> = (&manager_factory).get_manager(Arc::from(record));
+        if optional_manager.is_some(){
+            reservations.push(thread::spawn(move||optional_manager.unwrap().trigger_request()));
+        } else {
+            println!("Unable to find aero semaphore for {}", airline)
+        }
     }
 
     for reservation in reservations {

@@ -4,34 +4,42 @@ use std_semaphore::Semaphore;
 use std::collections::HashMap;
 
 pub struct RecordManagerFactory {
-    airline_to_semaphore: HashMap<String, Arc<Semaphore>>
+    airline_to_semaphore: HashMap<String, Arc<Semaphore>>,
+    package_semaphore: Arc<Semaphore>,
 }
 
 impl RecordManagerFactory {
     pub fn new() -> RecordManagerFactory {
 
-        let parallel_requests_count = 5;
-        let airlines = vec!["AERO_1", "AERO_2", "AERO_3"];
         let mut airline_to_semaphore = HashMap::new();
 
-        for airline in airlines {
-            airline_to_semaphore.insert(
-                airline.to_string(),
-                Arc::new(Semaphore::new(parallel_requests_count))
-            );
-        }
+        airline_to_semaphore.insert(
+            "AERO_1".to_string(),
+            Arc::new(Semaphore::new(5))
+        );
 
-        RecordManagerFactory { airline_to_semaphore }
+        airline_to_semaphore.insert(
+            "AERO_2".to_string(),
+            Arc::new(Semaphore::new(3))
+        );
+
+        airline_to_semaphore.insert(
+            "AERO_3".to_string(),
+            Arc::new(Semaphore::new(1))
+        );
+
+        let package_semaphore = Arc::new(Semaphore::new(3));
+
+        RecordManagerFactory { airline_to_semaphore, package_semaphore }
     }
 
     pub fn get_manager(&self, record: Arc<Record>) -> Option<RecordManager> {
         let semaphore = self.airline_to_semaphore
             .get(&*record.airline);
         if semaphore.is_some(){
-            Option::Some(RecordManager::new(record, (*(semaphore.unwrap())).clone()))
+            Option::Some(RecordManager::new(record, (*(semaphore.unwrap())).clone(), self.package_semaphore.clone()))
         } else {
             Option::None
         }
     }
-
 }

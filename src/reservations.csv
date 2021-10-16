@@ -2,6 +2,7 @@ origin,destination,airline,package
 NQN,AEP,AERO_1,false
 EZE,FCO,AERO_2,true
 AEP,IGR,AERO_1,true
+EZE,FCO,AERO_2,true
 EZE,IGR,AERO_2,false
 NQN,AEQ,AERO_1,false
 EZE,FCS,AERO_2,true

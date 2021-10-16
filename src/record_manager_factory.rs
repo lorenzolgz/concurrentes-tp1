@@ -1,11 +1,13 @@
 use crate::record_manager::{Record, RecordManager};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std_semaphore::Semaphore;
 use std::collections::HashMap;
+use std::time::Instant;
 
 pub struct RecordManagerFactory {
     airline_to_semaphore: HashMap<String, Arc<Semaphore>>,
     package_semaphore: Arc<Semaphore>,
+    times: Arc<RwLock<Vec<u128>>>,
 }
 
 impl RecordManagerFactory {
@@ -30,14 +32,16 @@ impl RecordManagerFactory {
 
         let package_semaphore = Arc::new(Semaphore::new(3));
 
-        RecordManagerFactory { airline_to_semaphore, package_semaphore }
+        let times = Arc::new(RwLock::new(Vec::new()));
+
+        RecordManagerFactory { airline_to_semaphore, package_semaphore, times }
     }
 
     pub fn get_manager(&self, record: Arc<Record>) -> Option<RecordManager> {
         let semaphore = self.airline_to_semaphore
             .get(&*record.airline);
         if semaphore.is_some(){
-            Option::Some(RecordManager::new(record, (*(semaphore.unwrap())).clone(), self.package_semaphore.clone()))
+            Option::Some(RecordManager::new(record, (*(semaphore.unwrap())).clone(), self.package_semaphore.clone(), self.times.clone()))
         } else {
             Option::None
         }

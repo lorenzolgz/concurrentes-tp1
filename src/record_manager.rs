@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use std::sync::Arc;
-use std::time::Duration;
+use std::sync::{Arc, RwLock, RwLockWriteGuard};
+use std::time::{Duration, Instant};
 use std_semaphore::Semaphore;
 use std::thread;
 use rand::Rng;
@@ -18,15 +18,17 @@ const AIRLINE_SERVER_SUCCESS_RATIO: f64 = 0.75;
 pub struct RecordManager {
     record: Arc<Record>,
     airline_semaphore: Arc<Semaphore>,
-    package_semaphore: Arc<Semaphore>
+    package_semaphore: Arc<Semaphore>,
+    times: Arc<RwLock<Vec<u128>>>,
 }
 
 impl RecordManager {
-    pub fn new( record: Arc<Record>, sem: Arc<Semaphore>, pack: Arc<Semaphore> ) -> RecordManager {
+    pub fn new( record: Arc<Record>, sem: Arc<Semaphore>, pack: Arc<Semaphore>, times: Arc<RwLock<Vec<u128>>> ) -> RecordManager {
         RecordManager {
             record,
             airline_semaphore: sem,
-            package_semaphore: pack
+            package_semaphore: pack,
+            times
         }
     }
 
@@ -48,6 +50,8 @@ impl RecordManager {
     }
 
     pub fn trigger_requests_until_success(&self) {
+        let now = Instant::now();
+
         let mut successful_request = self.trigger_request();
         while !successful_request {
             successful_request = self.trigger_request()
@@ -62,5 +66,14 @@ impl RecordManager {
 
             self.package_semaphore.release()
         }
+
+        if let Ok(mut times) = self.times.write() {
+            times.push(now.elapsed().as_millis());
+            println!("Time average: {}ms", average(times));
+        }
     }
+}
+
+fn average(numbers: RwLockWriteGuard<Vec<u128>>) -> f32 {
+    numbers.iter().sum::<u128>() as f32 / numbers.len() as f32
 }

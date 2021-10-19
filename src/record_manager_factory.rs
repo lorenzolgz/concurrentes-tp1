@@ -2,7 +2,6 @@ use crate::record_manager::{Record, RecordManager};
 use std::sync::{Arc, RwLock};
 use std_semaphore::Semaphore;
 use std::collections::HashMap;
-use std::time::Instant;
 
 pub struct RecordManagerFactory {
     airline_to_semaphore: HashMap<String, Arc<Semaphore>>,

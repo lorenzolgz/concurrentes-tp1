@@ -1,9 +1,9 @@
+use rand::Rng;
 use serde::Deserialize;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
+use std::thread;
 use std::time::{Duration, Instant};
 use std_semaphore::Semaphore;
-use std::thread;
-use rand::Rng;
 
 #[derive(Deserialize)]
 pub struct Record {
@@ -23,12 +23,17 @@ pub struct RecordManager {
 }
 
 impl RecordManager {
-    pub fn new( record: Arc<Record>, sem: Arc<Semaphore>, pack: Arc<Semaphore>, times: Arc<RwLock<Vec<u128>>> ) -> RecordManager {
+    pub fn new(
+        record: Arc<Record>,
+        sem: Arc<Semaphore>,
+        pack: Arc<Semaphore>,
+        times: Arc<RwLock<Vec<u128>>>,
+    ) -> RecordManager {
         RecordManager {
             record,
             airline_semaphore: sem,
             package_semaphore: pack,
-            times
+            times,
         }
     }
 

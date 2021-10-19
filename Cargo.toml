@@ -11,3 +11,11 @@ std-semaphore = "0.1"
 csv = "1"
 rand = "0.8"
 chrono = "0.4"
+
+[[bin]]
+name = "parte_a"
+path = "src/parte_a/main.rs"
+
+[[bin]]
+name = "parte_b"
+path = "src/parte_b/main.rs"

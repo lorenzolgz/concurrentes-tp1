@@ -16,7 +16,7 @@ fn main() -> Result<(), csv::Error> {
     let (logger_handle, log_send) = log_start();
     let mut reservations = vec![];
 
-    let csv = fs::read_to_string("./src/reservations.csv")
+    let csv = fs::read_to_string("./resources/reservations.csv")
         .expect("Something went wrong reading the file");
 
     println!("[Main] reservations.csv: \n {}", csv);

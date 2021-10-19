@@ -1,4 +1,5 @@
-use crate::record_manager::{Record, RecordManager};
+use crate::record::Record;
+use crate::record_manager::RecordManager;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std_semaphore::Semaphore;

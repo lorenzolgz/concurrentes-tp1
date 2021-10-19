@@ -1,9 +1,11 @@
 mod logger;
+mod record;
 mod record_manager;
 mod record_manager_factory;
 
 use crate::logger::{log_info, log_start, log_stop};
-use crate::record_manager::{Record, RecordManager};
+use crate::record::Record;
+use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
 use std::collections::HashMap;
 use std::sync::Arc;

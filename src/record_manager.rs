@@ -1,17 +1,9 @@
+use crate::record::Record;
 use rand::Rng;
-use serde::Deserialize;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 use std_semaphore::Semaphore;
-
-#[derive(Deserialize)]
-pub struct Record {
-    pub(crate) origin: String,
-    pub(crate) destination: String,
-    pub(crate) airline: String,
-    pub(crate) package: bool,
-}
 
 const AIRLINE_SERVER_SUCCESS_RATIO: f64 = 0.75;
 

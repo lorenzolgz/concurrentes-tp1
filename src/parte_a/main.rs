@@ -73,7 +73,7 @@ fn main() -> Result<(), csv::Error> {
             .expect("Unable to join on the associated thread");
     }
 
-    log_stop(log_send.clone(), logger_handle);
+    log_stop(log_send, logger_handle);
 
     Ok(())
 }

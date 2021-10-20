@@ -2,6 +2,7 @@ mod logger;
 mod record;
 mod record_manager;
 mod record_manager_factory;
+mod routs_stats;
 
 use crate::logger::{log_info, log_start, log_stop};
 use crate::record::Record;
@@ -13,6 +14,7 @@ use std::{fs, io, thread};
 
 fn main() -> Result<(), csv::Error> {
     let mut routs: HashMap<String, i32> = HashMap::new();
+
     let (logger_handle, log_send) = log_start();
     let mut reservations = vec![];
     let max_requests = get_max_requests_count();
@@ -26,7 +28,7 @@ fn main() -> Result<(), csv::Error> {
 
     println!("[Main] reservations.csv: \n {}", csv);
     log_info(
-        format!("[Main] reservations.csv: \n {}", csv),
+        format!("[Main] reservations.csv: \n{}", csv),
         log_send.clone(),
     );
 

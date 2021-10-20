@@ -51,6 +51,8 @@ impl RecordManager {
 
         let mut successful_request = self.trigger_request();
         while !successful_request {
+            let random_millis = rand::thread_rng().gen_range(100..2_000);
+            thread::sleep(Duration::from_millis(random_millis));
             successful_request = self.trigger_request()
         }
 

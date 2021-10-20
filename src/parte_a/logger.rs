@@ -1,4 +1,3 @@
-use chrono;
 use std::fs::File;
 use std::io::Write;
 use std::sync::mpsc;
@@ -32,7 +31,7 @@ impl Logger {
                 stop = true;
             } else {
                 self.file
-                    .write(text.as_ref())
+                    .write_all(text.as_ref())
                     .expect("Error writing to logger file");
             }
         }
@@ -54,11 +53,11 @@ pub fn log_start() -> (JoinHandle<()>, Sender<String>) {
 
     let logger_handle = thread::spawn(move || log.run());
 
-    return (logger_handle, log_send);
+    (logger_handle, log_send)
 }
 
 pub fn log_stop(log_send: Sender<String>, logger_handle: JoinHandle<()>) {
-    let msg = format!("STOP");
+    let msg = "STOP".to_string();
     log_send
         .send(msg)
         .expect("Error sending STOP msg to logger");

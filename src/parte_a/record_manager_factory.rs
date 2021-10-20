@@ -31,16 +31,16 @@ impl RecordManagerFactory {
     }
 
     pub fn get_manager(&self, record: Arc<Record>) -> Option<RecordManager> {
-        let semaphore = self.airline_to_semaphore.get(&*record.airline);
-        if semaphore.is_some() {
-            Option::Some(RecordManager::new(
-                record,
-                (*(semaphore.unwrap())).clone(),
-                self.package_semaphore.clone(),
-                self.times.clone(),
-            ))
-        } else {
-            Option::None
-        }
+        self.airline_to_semaphore.get(&*record.airline).map_or_else(
+            || Option::None,
+            |sem| {
+                Option::Some(RecordManager::new(
+                    record,
+                    (*sem).clone(),
+                    self.package_semaphore.clone(),
+                    self.times.clone(),
+                ))
+            },
+        )
     }
 }

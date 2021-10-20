@@ -11,14 +11,13 @@ pub struct RecordManagerFactory {
 }
 
 impl RecordManagerFactory {
-    pub fn new() -> RecordManagerFactory {
+    pub fn new(max_requests: isize) -> RecordManagerFactory {
         let mut airline_to_semaphore = HashMap::new();
-
-        airline_to_semaphore.insert("AERO_1".to_string(), Arc::new(Semaphore::new(5)));
-
-        airline_to_semaphore.insert("AERO_2".to_string(), Arc::new(Semaphore::new(3)));
-
-        airline_to_semaphore.insert("AERO_3".to_string(), Arc::new(Semaphore::new(1)));
+        let airlines = vec!["AERO_1", "AERO_2", "AERO_3"];
+        for airline in airlines {
+            airline_to_semaphore
+                .insert(airline.to_string(), Arc::new(Semaphore::new(max_requests)));
+        }
 
         let package_semaphore = Arc::new(Semaphore::new(3));
 

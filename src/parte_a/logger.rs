@@ -12,7 +12,7 @@ pub struct Logger {
 
 impl Logger {
     pub fn new(log_receive: Receiver<String>) -> Logger {
-        let file_name = format!("./logs/{}.txt", chrono::offset::Local::now().to_string());
+        let file_name = format!("./logs/{}.txt", chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
         let file = File::create(file_name).expect("Error creating logger file");
 
         Logger { file, log_receive }
@@ -39,8 +39,9 @@ impl Logger {
 }
 
 pub fn log_info(msg: String, log_send: Sender<String>) {
-    let time_stamp = chrono::offset::Local::now().to_string();
-    let log_info = format!("[INFO] {}: {}\n", time_stamp, msg);
+    println!("{}",msg);
+    let time_stamp = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let log_info = format!("[{}] {}\n", time_stamp, msg);
     log_send
         .send(log_info)
         .expect("Error sending info msg to logger");

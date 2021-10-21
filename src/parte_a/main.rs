@@ -8,53 +8,50 @@ use crate::logger::{log_info, log_start, log_stop};
 use crate::record::Record;
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::{fs, io, thread};
+use std::sync::mpsc::Sender;
+use std::time::Duration;
+use crate::routs_stats::RoutsStats;
 
 fn main() -> Result<(), csv::Error> {
-    let mut routs: HashMap<String, i32> = HashMap::new();
+
+    let rout_stats = Arc::new(Mutex::new(RoutsStats::new()));
 
     let (logger_handle, log_send) = log_start();
+
     let mut reservations = vec![];
     let max_requests = get_max_requests_count();
-    println!(
-        "[Main] Starting process with {} parallel requests at most per server",
-        max_requests
+    log_info(
+        format!(
+            "[Main] Starting process with {} parallel requests at most per server",
+            max_requests
+        ),
+        log_send.clone(),
     );
 
     let csv = fs::read_to_string("./resources/reservations.csv")
         .expect("Something went wrong reading the file");
 
-    println!("[Main] reservations.csv: \n {}", csv);
     log_info(
         format!("[Main] reservations.csv: \n{}", csv),
         log_send.clone(),
     );
 
+    let clone_rout_stats = rout_stats.clone();
+    let stats_log_send = log_send.clone();
+    let stats_handle = thread::spawn(move || rout_stats_monitor(clone_rout_stats, stats_log_send));
+
     let mut reader = csv::Reader::from_reader(csv.as_bytes());
-    let manager_factory = RecordManagerFactory::new(max_requests);
+    let manager_factory = RecordManagerFactory::new(max_requests, log_send.clone());
 
     for record in reader.deserialize() {
         let record: Record = record?;
 
         let rout = format!("{}-{}", record.origin, record.destination);
-        let local_rout = rout.clone();
-
-        match routs.get_mut(&*rout) {
-            Some(routs) => {
-                *routs += 1;
-            }
-            None => {
-                routs.insert(rout, 1);
-            }
-        }
-
-        println!(
-            "[Main] {}: {}",
-            format!("{}-{}", record.origin, record.destination),
-            routs[&local_rout]
-        );
+        let local_rout_stats = rout_stats.clone();
+        let mut local_rout_stats = local_rout_stats.lock().unwrap();
+        local_rout_stats.add(rout);
 
         let airline: String = record.airline.to_string();
         let optional_manager: Option<RecordManager> =
@@ -74,6 +71,12 @@ fn main() -> Result<(), csv::Error> {
             .join()
             .expect("Unable to join on the associated thread");
     }
+
+    match rout_stats.lock() {
+        Ok(mut g) => g.stop(),
+        Err(e) => panic!("Mutex error at rout_stats {}",e)
+    }
+    stats_handle.join().expect("Unable to join stats_handle");
 
     log_stop(log_send, logger_handle);
 
@@ -101,4 +104,23 @@ fn get_max_requests_count() -> isize {
             get_max_requests_count()
         }
     };
+}
+
+
+fn rout_stats_monitor (clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<String>){
+    loop {
+        thread::sleep(Duration::from_secs(10));
+        let mut rout_stats = clone_rout_stats.lock().unwrap();
+        let result = rout_stats.top10();
+
+        let mut msg = "Top 10 more requested routs \n".to_string();
+
+        for i in result {
+            msg += &*format!("Rout:{}, N:{}\n", i.rout, i.number_of_trips)
+        };
+
+        log_info(msg,log.clone());
+
+        if rout_stats.stopped { break; }
+    }
 }

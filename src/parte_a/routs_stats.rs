@@ -4,7 +4,8 @@ pub struct RoutInfo {
 }
 
 pub struct RoutsStats {
-    routs: Vec<RoutInfo>
+    routs: Vec<RoutInfo>,
+    pub(crate) stopped: bool
 }
 
 impl RoutInfo {
@@ -16,7 +17,7 @@ impl RoutInfo {
 impl RoutsStats {
     pub fn  new() -> RoutsStats {
         let routs:Vec<RoutInfo> = Vec::new();
-        RoutsStats {routs}
+        RoutsStats {routs, stopped: false}
     }
 
     pub fn add(&mut self, rout: String) {
@@ -25,6 +26,10 @@ impl RoutsStats {
             Some(i) => self.routs[i] = RoutInfo::new(rout, self.routs[i].number_of_trips + 1),
             None => self.routs.push(RoutInfo::new(rout, 1)),
         }
+    }
+
+    pub fn stop(&mut self) {
+        self.stopped = true;
     }
 
     pub fn top10(&mut self) -> Vec<&RoutInfo> {
@@ -40,6 +45,6 @@ impl RoutsStats {
         for index in 0..result_len  {
             result.push(&self.routs[index]);
         }
-        return result;
+        result
     }
 }

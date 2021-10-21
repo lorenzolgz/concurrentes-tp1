@@ -1,9 +1,12 @@
 use crate::record::Record;
 use rand::Rng;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
+use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::{Duration, Instant};
 use std_semaphore::Semaphore;
+use crate::logger::log_info;
+
 
 const AIRLINE_SERVER_SUCCESS_RATIO: f64 = 0.75;
 
@@ -12,6 +15,7 @@ pub struct RecordManager {
     airline_semaphore: Arc<Semaphore>,
     package_semaphore: Arc<Semaphore>,
     times: Arc<RwLock<Vec<u128>>>,
+    log_send: Sender<String>,
 }
 
 impl RecordManager {
@@ -20,12 +24,14 @@ impl RecordManager {
         sem: Arc<Semaphore>,
         pack: Arc<Semaphore>,
         times: Arc<RwLock<Vec<u128>>>,
+        log_send: Sender<String>,
     ) -> RecordManager {
         RecordManager {
             record,
             airline_semaphore: sem,
             package_semaphore: pack,
             times,
+            log_send,
         }
     }
 
@@ -34,13 +40,15 @@ impl RecordManager {
         let random_millis = rand::thread_rng().gen_range(100..2_000);
         let is_success = rand::thread_rng().gen_bool(AIRLINE_SERVER_SUCCESS_RATIO);
         thread::sleep(Duration::from_millis(random_millis));
-        println!(
-            "[Thread] Successful: {}, Origin: {}, Destination: {}, Airline: {}, Package: {}",
-            is_success,
-            self.record.origin,
-            self.record.destination,
-            self.record.airline,
-            self.record.package
+        log_info(
+            format!("[{:?}] Successful: {}, Origin: {}, Destination: {}, Airline: {}, Package: {}",
+                    thread::current().id(),
+                    is_success,
+                    self.record.origin,
+                    self.record.destination,
+                    self.record.airline,
+                    self.record.package),
+            self.log_send.clone()
         );
         self.airline_semaphore.release();
         is_success
@@ -51,15 +59,14 @@ impl RecordManager {
 
         let mut successful_request = self.trigger_request();
         while !successful_request {
-            let random_millis = rand::thread_rng().gen_range(100..2_000);
-            thread::sleep(Duration::from_millis(random_millis));
+            thread::sleep(Duration::from_millis(2000));
             successful_request = self.trigger_request()
         }
 
         if self.record.package {
             self.package_semaphore.acquire();
 
-            println!("[Package request]");
+            log_info(format!("[{:?}] Package request", thread::current().id()), self.log_send.clone());
             let random_millis = rand::thread_rng().gen_range(100..2_000);
             thread::sleep(Duration::from_millis(random_millis));
 
@@ -68,7 +75,10 @@ impl RecordManager {
 
         if let Ok(mut times) = self.times.write() {
             times.push(now.elapsed().as_millis());
-            println!("Time average: {}ms", average(times));
+            log_info(
+                format!("[{:?}] Request time average: {}ms", thread::current().id(), average(times)),
+                self.log_send.clone()
+            );
         }
     }
 }

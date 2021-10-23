@@ -1,8 +1,8 @@
 use crate::record::Record;
 use crate::record_manager::RecordManager;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 use std::sync::mpsc::Sender;
+use std::sync::{Arc, RwLock};
 use std_semaphore::Semaphore;
 
 pub struct RecordManagerFactory {
@@ -29,7 +29,7 @@ impl RecordManagerFactory {
             airline_to_semaphore,
             package_semaphore,
             times,
-            log_send
+            log_send,
         }
     }
 

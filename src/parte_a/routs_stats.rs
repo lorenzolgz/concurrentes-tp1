@@ -1,23 +1,29 @@
 pub struct RoutInfo {
     pub(crate) rout: String,
-    pub(crate) number_of_trips: i32
+    pub(crate) number_of_trips: i32,
 }
 
 pub struct RoutsStats {
     routs: Vec<RoutInfo>,
-    pub(crate) stopped: bool
+    pub(crate) stopped: bool,
 }
 
 impl RoutInfo {
-    pub fn  new(rout: String, number_of_trips: i32) -> RoutInfo {
-        RoutInfo {rout, number_of_trips}
+    pub fn new(rout: String, number_of_trips: i32) -> RoutInfo {
+        RoutInfo {
+            rout,
+            number_of_trips,
+        }
     }
 }
 
 impl RoutsStats {
-    pub fn  new() -> RoutsStats {
-        let routs:Vec<RoutInfo> = Vec::new();
-        RoutsStats {routs, stopped: false}
+    pub fn new() -> RoutsStats {
+        let routs: Vec<RoutInfo> = Vec::new();
+        RoutsStats {
+            routs,
+            stopped: false,
+        }
     }
 
     pub fn add(&mut self, rout: String) {
@@ -42,7 +48,7 @@ impl RoutsStats {
             result_len = self.routs.len();
         }
 
-        for index in 0..result_len  {
+        for index in 0..result_len {
             result.push(&self.routs[index]);
         }
         result

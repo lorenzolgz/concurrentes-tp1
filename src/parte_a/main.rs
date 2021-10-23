@@ -59,7 +59,12 @@ fn main() -> Result<(), csv::Error> {
         let optional_manager: Option<RecordManager> =
             (&manager_factory).get_manager(Arc::from(record));
         optional_manager.map_or_else(
-            || println!("Unable to find aero semaphore for {}", airline),
+            || {
+                log_info(
+                    format!("[Main] Unable to find service semaphore for {}", airline),
+                    log_send.clone(),
+                )
+            },
             |manager| {
                 reservations.push(thread::spawn(move || {
                     manager.trigger_requests_until_success()

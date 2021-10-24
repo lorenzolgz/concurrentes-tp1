@@ -8,14 +8,13 @@ use crate::logger::{log_info, log_start, log_stop};
 use crate::record::Record;
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
-use std::sync::{Arc, Mutex};
-use std::{fs, io, thread};
-use std::sync::mpsc::Sender;
-use std::time::Duration;
 use crate::routs_stats::RoutsStats;
+use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use std::{fs, io, thread};
 
 fn main() -> Result<(), csv::Error> {
-
     let rout_stats = Arc::new(Mutex::new(RoutsStats::new()));
 
     let (logger_handle, log_send) = log_start();
@@ -50,14 +49,22 @@ fn main() -> Result<(), csv::Error> {
 
         let rout = format!("{}-{}", record.origin, record.destination);
         let local_rout_stats = rout_stats.clone();
-        let mut local_rout_stats = local_rout_stats.lock().unwrap();
-        local_rout_stats.add(rout);
+
+        match local_rout_stats.lock() {
+            Ok(mut g) => g.add(rout),
+            Err(e) => panic!("Mutex error at rout_stats {}", e),
+        }
 
         let airline: String = record.airline.to_string();
         let optional_manager: Option<RecordManager> =
             (&manager_factory).get_manager(Arc::from(record));
         optional_manager.map_or_else(
-            || println!("Unable to find aero semaphore for {}", airline),
+            || {
+                log_info(
+                    format!("[Main] Unable to find service semaphore for {}", airline),
+                    log_send.clone(),
+                )
+            },
             |manager| {
                 reservations.push(thread::spawn(move || {
                     manager.trigger_requests_until_success()
@@ -74,7 +81,7 @@ fn main() -> Result<(), csv::Error> {
 
     match rout_stats.lock() {
         Ok(mut g) => g.stop(),
-        Err(e) => panic!("Mutex error at rout_stats {}",e)
+        Err(e) => panic!("Mutex error at rout_stats {}", e),
     }
     stats_handle.join().expect("Unable to join stats_handle");
 
@@ -106,21 +113,27 @@ fn get_max_requests_count() -> isize {
     };
 }
 
-
-fn rout_stats_monitor (clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<String>){
+fn rout_stats_monitor(clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<String>) {
     loop {
         thread::sleep(Duration::from_secs(10));
-        let mut rout_stats = clone_rout_stats.lock().unwrap();
-        let result = rout_stats.top10();
+
+        let mut guard = match clone_rout_stats.lock() {
+            Ok(g) => g,
+            Err(e) => panic!("Mutex error of rout_stats at rout_stats_monitor {}", e),
+        };
+
+        let result = guard.top10();
 
         let mut msg = "Top 10 more requested routs \n".to_string();
 
         for i in result {
             msg += &*format!("Rout:{}, N:{}\n", i.rout, i.number_of_trips)
-        };
+        }
 
-        log_info(msg,log.clone());
+        log_info(msg, log.clone());
 
-        if rout_stats.stopped { break; }
+        if guard.stopped {
+            break;
+        }
     }
 }

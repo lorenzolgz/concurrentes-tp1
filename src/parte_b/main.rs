@@ -206,7 +206,7 @@ fn main() {
                 aeroservices,
                 hotel: hotel_service,
             }
-                .start(),
+            .start(),
         );
 
         for aero_id in 1..4 {

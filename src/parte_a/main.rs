@@ -5,7 +5,8 @@ mod routs_stats;
 
 extern crate common;
 
-use crate::common::Record;
+use crate::common::helper::get_max_requests_count;
+use crate::common::record::Record;
 use crate::logger::{log_info, log_start, log_stop};
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
@@ -13,7 +14,7 @@ use crate::routs_stats::RoutsStats;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use std::{fs, io, thread};
+use std::{fs, thread};
 
 fn main() -> Result<(), csv::Error> {
     let rout_stats = Arc::new(Mutex::new(RoutsStats::new()));
@@ -89,29 +90,6 @@ fn main() -> Result<(), csv::Error> {
     log_stop(log_send, logger_handle);
 
     Ok(())
-}
-
-fn get_max_requests_count() -> isize {
-    let mut line = String::new();
-    let error_message = "[Main] Expected a number greater than zero.";
-    println!("[Main] Enter maximum amount of parallel requests to web services:");
-    io::stdin()
-        .read_line(&mut line)
-        .expect("failed to read from stdin");
-    return match line.trim().parse::<u32>() {
-        Ok(i) => {
-            if i > 0 {
-                i as isize
-            } else {
-                println!("{}", error_message);
-                get_max_requests_count()
-            }
-        }
-        Err(..) => {
-            println!("{}", error_message);
-            get_max_requests_count()
-        }
-    };
 }
 
 fn rout_stats_monitor(clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<String>) {

@@ -24,4 +24,4 @@ path = "src/parte_b/main.rs"
 
 [lib]
 name = "common"
-path = "src/common/record.rs"
+path = "src/common/lib.rs"

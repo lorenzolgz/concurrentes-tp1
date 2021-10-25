@@ -1,6 +1,6 @@
 extern crate common;
 
-use super::common::Record;
+use super::common::record::Record;
 use crate::logger::log_info;
 use rand::Rng;
 use std::sync::mpsc::Sender;

@@ -21,3 +21,7 @@ path = "src/parte_a/main.rs"
 [[bin]]
 name = "parte_b"
 path = "src/parte_b/main.rs"
+
+[lib]
+name = "common"
+path = "src/common/record.rs"

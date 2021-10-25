@@ -1,11 +1,12 @@
 mod logger;
-mod record;
 mod record_manager;
 mod record_manager_factory;
 mod routs_stats;
 
+extern crate common;
+
+use crate::common::Record;
 use crate::logger::{log_info, log_start, log_stop};
-use crate::record::Record;
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
 use crate::routs_stats::RoutsStats;

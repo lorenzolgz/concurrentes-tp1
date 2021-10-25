@@ -1,4 +1,6 @@
-use crate::record::Record;
+extern crate common;
+
+use crate::common::Record;
 use crate::record_manager::RecordManager;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;

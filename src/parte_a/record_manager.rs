@@ -1,5 +1,7 @@
+extern crate common;
+
+use super::common::Record;
 use crate::logger::log_info;
-use crate::record::Record;
 use rand::Rng;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};

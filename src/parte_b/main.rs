@@ -20,11 +20,9 @@ struct EntryMessage {
     sender: Option<Arc<EntryRecipient>>,
 }
 
-
 #[derive(Message)]
 #[rtype(result = "()")]
 struct EntryHotelMessage {
-    hotel_id: usize,
     sender: Option<Arc<Recipient<EntryHotelSuccess>>>,
 }
 
@@ -37,7 +35,6 @@ struct EntryRecipient {
 #[rtype(result = "()")]
 struct EntryAeroSuccess {
     original_message: Arc<EntryMessage>,
-    aero_reference: Recipient<EntryMessage>,
     aero_id: usize,
 }
 
@@ -84,7 +81,10 @@ impl Handler<EntryMessage> for Orquestador {
     type Result = ();
 
     fn handle(&mut self, _msg: EntryMessage, _ctx: &mut Context<Self>) -> Self::Result {
-        println!("[Orquestador] recibi entry message de aeropuerto {}", _msg.aero_id);
+        println!(
+            "[Orquestador] recibi entry message de aeropuerto {}",
+            _msg.aero_id
+        );
         self.aeroservices
             .get(&_msg.aero_id)
             .unwrap()
@@ -107,16 +107,14 @@ impl Handler<EntryAeroSuccess> for Orquestador {
             "[Orquestador] recibí success de AEROSERVICE {}",
             msg.aero_id
         );
-        if(msg.original_message.is_hotel){
-            self.hotel.try_send(
-                EntryHotelMessage{
-                    hotel_id: 1,
-                    sender: Some(Arc::from(_ctx.address().recipient()))
-                }
-            );
+        if msg.original_message.is_hotel {
+            self.hotel
+                .try_send(EntryHotelMessage {
+                    sender: Some(Arc::from(_ctx.address().recipient())),
+                })
+                .unwrap()
         }
     }
-    //TODO: chequear si is_hotel para mandar mensaje al hotel
 }
 
 impl Handler<EntryFailed> for Orquestador {
@@ -127,8 +125,7 @@ impl Handler<EntryFailed> for Orquestador {
         let timer = SystemTime::now();
         println!(
             "[Orquestador] recibí failed de AEROSERVICE {}, me voy a dormir {} millis",
-            msg.aero_id,
-            millis_to_sleep
+            msg.aero_id, millis_to_sleep
         );
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))
             .into_actor(self)
@@ -151,32 +148,26 @@ impl Handler<EntryMessage> for AeroService {
         println!("[AEROSERVICE {}] recibo entry", self.id);
         let is_success = thread_rng().gen_bool(0.5);
         println!("[AEROSERVICE {}] is_success={}", self.id, is_success);
+        let copy_msg = Arc::from(msg);
+        let recipient = copy_msg.sender.as_ref().unwrap();
+
         if is_success {
-            let copy_msg = Arc::from(msg);
-            copy_msg
-                .sender
-                .as_ref()
-                .unwrap()
+            recipient
                 .sender_success
                 .try_send(EntryAeroSuccess {
                     aero_id: self.id,
                     original_message: copy_msg.clone(),
-                    aero_reference: _ctx.address().recipient()
                 })
-                .unwrap();
-        } else {
-            let copy_msg = Arc::from(msg);
-            copy_msg
-                .sender
-                .as_ref()
                 .unwrap()
+        } else {
+            recipient
                 .sender_failed
                 .try_send(EntryFailed {
                     original_message: copy_msg.clone(),
                     aero_reference: _ctx.address().recipient(),
                     aero_id: self.id,
                 })
-                .unwrap();
+                .unwrap()
         }
     }
 }
@@ -196,10 +187,7 @@ impl Handler<EntryHotelSuccess> for Orquestador {
     type Result = ();
 
     fn handle(&mut self, msg: EntryHotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
-        println!(
-            "[Orquestador] recibí success de HOTEL {}",
-            msg.id
-        );
+        println!("[Orquestador] recibí success de HOTEL {}", msg.id);
     }
 }
 
@@ -213,14 +201,20 @@ fn main() {
 
         let hotel_service = SyncArbiter::start(10, || Hotel { id: 1 });
 
-        let otro_orq = Arc::from(Orquestador { aeroservices, hotel: hotel_service }.start());
+        let otro_orq = Arc::from(
+            Orquestador {
+                aeroservices,
+                hotel: hotel_service,
+            }
+                .start(),
+        );
 
         for aero_id in 1..4 {
             for _i in 0..MESSAGES_PER_AERO {
                 otro_orq.do_send(EntryMessage {
                     aero_id,
                     sender: Option::None,
-                    is_hotel: true //TODO tomar del record
+                    is_hotel: true, //TODO tomar del record
                 });
             }
         }

@@ -1,7 +1,7 @@
 extern crate actix;
 
-use crate::aeroservice::AeroService;
-use crate::hotel::Hotel;
+use crate::actors::aeroservice::AeroService;
+use crate::actors::hotel::Hotel;
 use actix::Addr;
 use std::collections::HashMap;
 

@@ -1,6 +1,6 @@
 extern crate actix;
 
-use crate::entry_recipient::EntryRecipient;
+use crate::actors::entry_recipient::EntryRecipient;
 use actix::Message;
 use std::sync::Arc;
 

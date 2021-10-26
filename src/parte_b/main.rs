@@ -1,24 +1,16 @@
 extern crate actix;
+mod actors;
+mod messages;
 
-mod aeroservice;
-mod entry_aero_success;
-mod entry_failed;
-mod entry_hotel_message;
-mod entry_hotel_success;
-mod entry_message;
-mod entry_recipient;
-mod hotel;
-mod orquestador;
-
-use crate::aeroservice::AeroService;
-use crate::entry_aero_success::EntryAeroSuccess;
-use crate::entry_failed::EntryFailed;
-use crate::entry_hotel_message::EntryHotelMessage;
-use crate::entry_hotel_success::EntryHotelSuccess;
-use crate::entry_message::EntryMessage;
-use crate::entry_recipient::EntryRecipient;
-use crate::hotel::Hotel;
-use crate::orquestador::Orquestador;
+use crate::actors::aeroservice::AeroService;
+use crate::actors::entry_recipient::EntryRecipient;
+use crate::actors::hotel::Hotel;
+use crate::actors::orquestador::Orquestador;
+use crate::messages::entry_aero_success::EntryAeroSuccess;
+use crate::messages::entry_failed::EntryFailed;
+use crate::messages::entry_hotel_message::EntryHotelMessage;
+use crate::messages::entry_hotel_success::EntryHotelSuccess;
+use crate::messages::entry_message::EntryMessage;
 use actix::clock::sleep;
 use actix::{
     Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, SyncArbiter,

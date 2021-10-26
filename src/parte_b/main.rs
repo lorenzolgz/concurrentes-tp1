@@ -1,35 +1,36 @@
 extern crate actix;
 
-mod entry_message;
+mod aeroservice;
 mod entry_aero_success;
 mod entry_failed;
 mod entry_hotel_message;
 mod entry_hotel_success;
+mod entry_message;
 mod entry_recipient;
-mod orquestador;
-mod aeroservice;
 mod hotel;
+mod orquestador;
 
-use crate::entry_message::EntryMessage;
+use crate::aeroservice::AeroService;
 use crate::entry_aero_success::EntryAeroSuccess;
 use crate::entry_failed::EntryFailed;
 use crate::entry_hotel_message::EntryHotelMessage;
 use crate::entry_hotel_success::EntryHotelSuccess;
+use crate::entry_message::EntryMessage;
 use crate::entry_recipient::EntryRecipient;
-use crate::aeroservice::AeroService;
 use crate::hotel::Hotel;
 use crate::orquestador::Orquestador;
 use actix::clock::sleep;
 use actix::{
-    Actor, ActorFutureExt, AsyncContext, Context, Handler,
-    ResponseActFuture, SyncArbiter, SyncContext, System, WrapFuture,
+    Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, SyncArbiter,
+    SyncContext, System, WrapFuture,
 };
+use common::helper::get_max_requests_count;
+use common::record::Record;
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
+use std::fs;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
-
-const MESSAGES_PER_AERO: usize = 1;
 
 impl Actor for Orquestador {
     type Context = Context<Self>;
@@ -51,17 +52,22 @@ impl Handler<EntryMessage> for Orquestador {
             "[Orquestador] recibi entry message de aeropuerto {}",
             _msg.aero_id
         );
-        self.aeroservices
-            .get(&_msg.aero_id)
-            .unwrap()
-            .do_send(EntryMessage {
-                aero_id: _msg.aero_id,
-                is_hotel: _msg.is_hotel,
-                sender: Option::Some(Arc::from(EntryRecipient {
-                    sender_failed: _ctx.address().recipient(),
-                    sender_success: _ctx.address().recipient(),
-                })),
-            });
+        self.aeroservices.get(&_msg.aero_id).map_or_else(
+            || {
+                println!("[Orquestador] Unable to find aeroservice for an airline")
+                // TODO imprimir tambien el aero_id
+            },
+            |aero_service| {
+                aero_service.do_send(EntryMessage {
+                    aero_id: _msg.aero_id,
+                    is_hotel: _msg.is_hotel,
+                    sender: Option::Some(Arc::from(EntryRecipient {
+                        sender_failed: _ctx.address().recipient(),
+                        sender_success: _ctx.address().recipient(),
+                    })),
+                })
+            },
+        )
     }
 }
 
@@ -121,7 +127,7 @@ impl Handler<EntryMessage> for AeroService {
             recipient
                 .sender_success
                 .try_send(EntryAeroSuccess {
-                    aero_id: self.id,
+                    aero_id: self.id.to_string(),
                     original_message: copy_msg.clone(),
                 })
                 .unwrap()
@@ -131,7 +137,7 @@ impl Handler<EntryMessage> for AeroService {
                 .try_send(EntryFailed {
                     original_message: copy_msg.clone(),
                     aero_reference: _ctx.address().recipient(),
-                    aero_id: self.id,
+                    aero_id: self.id.to_string(),
                 })
                 .unwrap()
         }
@@ -158,14 +164,34 @@ impl Handler<EntryHotelSuccess> for Orquestador {
 }
 
 fn main() {
+    let max_requests = get_max_requests_count() as usize;
+    let csv = fs::read_to_string("./resources/reservations.csv")
+        .expect("Something went wrong reading the file");
+
+    let mut reader = csv::Reader::from_reader(csv.as_bytes());
     let system = System::new();
+
     system.block_on(async {
         let mut aeroservices = HashMap::new();
-        aeroservices.insert(1, SyncArbiter::start(1, || AeroService { id: 1 }));
-        aeroservices.insert(2, SyncArbiter::start(1, || AeroService { id: 2 }));
-        aeroservices.insert(3, SyncArbiter::start(1, || AeroService { id: 3 }));
-
-        let hotel_service = SyncArbiter::start(10, || Hotel { id: 1 });
+        aeroservices.insert(
+            "AERO_1".to_string(),
+            SyncArbiter::start(max_requests, || AeroService {
+                id: "AERO_1".to_string(),
+            }),
+        );
+        aeroservices.insert(
+            "AERO_2".to_string(),
+            SyncArbiter::start(max_requests, || AeroService {
+                id: "AERO_2".to_string(),
+            }),
+        );
+        aeroservices.insert(
+            "AERO_3".to_string(),
+            SyncArbiter::start(max_requests, || AeroService {
+                id: "AERO_3".to_string(),
+            }),
+        );
+        let hotel_service = SyncArbiter::start(max_requests, || Hotel { id: 1 });
 
         let otro_orq = Arc::from(
             Orquestador {
@@ -175,14 +201,13 @@ fn main() {
             .start(),
         );
 
-        for aero_id in 1..4 {
-            for _i in 0..MESSAGES_PER_AERO {
-                otro_orq.do_send(EntryMessage {
-                    aero_id,
-                    sender: Option::None,
-                    is_hotel: true, //TODO tomar del record
-                });
-            }
+        for record in reader.deserialize() {
+            let record: Record = record.expect("Unable to parse record");
+            otro_orq.do_send(EntryMessage {
+                aero_id: record.airline.to_string(),
+                is_hotel: record.package,
+                sender: Option::None,
+            });
         }
     });
 

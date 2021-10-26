@@ -2,9 +2,7 @@ extern crate actix;
 
 use crate::entry_aero_success::EntryAeroSuccess;
 use crate::entry_failed::EntryFailed;
-use actix::{
-    Recipient,
-};
+use actix::Recipient;
 
 pub struct EntryRecipient {
     pub(crate) sender_success: Recipient<EntryAeroSuccess>,

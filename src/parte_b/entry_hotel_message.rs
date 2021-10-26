@@ -1,9 +1,7 @@
 extern crate actix;
 
 use crate::entry_hotel_success::EntryHotelSuccess;
-use actix::{
-    Message, Recipient,
-};
+use actix::{Message, Recipient};
 use std::sync::Arc;
 
 #[derive(Message)]

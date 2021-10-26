@@ -1,3 +1,3 @@
 pub struct AeroService {
-    pub(crate) id: usize,
+    pub(crate) id: String,
 }

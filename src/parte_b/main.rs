@@ -6,12 +6,10 @@ use crate::actors::aeroservice::AeroService;
 use crate::actors::hotel::Hotel;
 use crate::actors::orquestador::Orquestador;
 use crate::messages::entry_message::EntryMessage;
-use actix::{
-    Actor, SyncArbiter, System,
-};
+use actix::{Actor, SyncArbiter, System};
+use common::airlines::AIRLINES;
 use common::helper::get_max_requests_count;
 use common::record::Record;
-use common::airlines::AIRLINES;
 use std::collections::HashMap;
 use std::fs;
 use std::sync::Arc;

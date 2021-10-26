@@ -1,12 +1,10 @@
 extern crate actix;
-use actix::{
-    Actor, Handler, SyncContext,
-};
-use crate::messages::entry_message::EntryMessage;
-use std::sync::Arc;
-use rand::{thread_rng, Rng};
 use crate::messages::entry_aero_success::EntryAeroSuccess;
 use crate::messages::entry_failed::EntryFailed;
+use crate::messages::entry_message::EntryMessage;
+use actix::{Actor, Handler, SyncContext};
+use rand::{thread_rng, Rng};
+use std::sync::Arc;
 
 pub struct AeroService {
     pub(crate) id: String,

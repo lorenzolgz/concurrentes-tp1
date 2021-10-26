@@ -1,22 +1,20 @@
 extern crate actix;
 
 use crate::actors::aeroservice::AeroService;
-use crate::actors::hotel::Hotel;
-use actix::{
-    Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, WrapFuture,
-};
-use actix::Addr;
-use rand::{thread_rng, Rng};
-use std::sync::Arc;
-use std::collections::HashMap;
-use actix::clock::sleep;
-use std::time::{Duration, SystemTime};
 use crate::actors::entry_recipient::EntryRecipient;
+use crate::actors::hotel::Hotel;
 use crate::messages::entry_aero_success::EntryAeroSuccess;
 use crate::messages::entry_failed::EntryFailed;
 use crate::messages::entry_hotel_message::EntryHotelMessage;
 use crate::messages::entry_hotel_success::EntryHotelSuccess;
 use crate::messages::entry_message::EntryMessage;
+use actix::clock::sleep;
+use actix::Addr;
+use actix::{Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, WrapFuture};
+use rand::{thread_rng, Rng};
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::{Duration, SystemTime};
 
 pub struct Orquestador {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,

@@ -1,9 +1,7 @@
 extern crate actix;
 use crate::messages::entry_hotel_message::EntryHotelMessage;
 use crate::messages::entry_hotel_success::EntryHotelSuccess;
-use actix::{
-    Actor, Handler, SyncContext,
-};
+use actix::{Actor, Handler, SyncContext};
 
 pub struct Hotel {
     pub(crate) id: usize,

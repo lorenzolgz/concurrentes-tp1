@@ -18,6 +18,7 @@ use actix::{
 };
 use common::helper::get_max_requests_count;
 use common::record::Record;
+use common::airlines::AIRLINES;
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::fs;
@@ -165,26 +166,16 @@ fn main() {
 
     system.block_on(async {
         let mut aeroservices = HashMap::new();
-        aeroservices.insert(
-            "AERO_1".to_string(),
-            SyncArbiter::start(max_requests, || AeroService {
-                id: "AERO_1".to_string(),
-            }),
-        );
-        aeroservices.insert(
-            "AERO_2".to_string(),
-            SyncArbiter::start(max_requests, || AeroService {
-                id: "AERO_2".to_string(),
-            }),
-        );
-        aeroservices.insert(
-            "AERO_3".to_string(),
-            SyncArbiter::start(max_requests, || AeroService {
-                id: "AERO_3".to_string(),
-            }),
-        );
-        let hotel_service = SyncArbiter::start(max_requests, || Hotel { id: 1 });
+        for airline in AIRLINES {
+            aeroservices.insert(
+                airline.to_string(),
+                SyncArbiter::start(max_requests, move || AeroService {
+                    id: airline.to_string(),
+                }),
+            );
+        }
 
+        let hotel_service = SyncArbiter::start(max_requests, || Hotel { id: 1 });
         let otro_orq = Arc::from(
             Orquestador {
                 aeroservices,
@@ -192,7 +183,6 @@ fn main() {
             }
             .start(),
         );
-
         for record in reader.deserialize() {
             let record: Record = record.expect("Unable to parse record");
             otro_orq.do_send(EntryMessage {

@@ -1,6 +1,7 @@
 extern crate common;
 
 use crate::common::record::Record;
+use crate::common::airlines::AIRLINES;
 use crate::record_manager::RecordManager;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
@@ -17,8 +18,7 @@ pub struct RecordManagerFactory {
 impl RecordManagerFactory {
     pub fn new(max_requests: isize, log_send: Sender<String>) -> RecordManagerFactory {
         let mut airline_to_semaphore = HashMap::new();
-        let airlines = vec!["AERO_1", "AERO_2", "AERO_3"];
-        for airline in airlines {
+        for airline in AIRLINES {
             airline_to_semaphore
                 .insert(airline.to_string(), Arc::new(Semaphore::new(max_requests)));
         }

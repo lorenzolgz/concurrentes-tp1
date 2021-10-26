@@ -1,8 +1,27 @@
 extern crate actix;
 
+mod entry_message;
+mod entry_aero_success;
+mod entry_failed;
+mod entry_hotel_message;
+mod entry_hotel_success;
+mod entry_recipient;
+mod orquestador;
+mod aeroservice;
+mod hotel;
+
+use crate::entry_message::EntryMessage;
+use crate::entry_aero_success::EntryAeroSuccess;
+use crate::entry_failed::EntryFailed;
+use crate::entry_hotel_message::EntryHotelMessage;
+use crate::entry_hotel_success::EntryHotelSuccess;
+use crate::entry_recipient::EntryRecipient;
+use crate::aeroservice::AeroService;
+use crate::hotel::Hotel;
+use crate::orquestador::Orquestador;
 use actix::clock::sleep;
 use actix::{
-    Actor, ActorFutureExt, Addr, AsyncContext, Context, Handler, Message, Recipient,
+    Actor, ActorFutureExt, AsyncContext, Context, Handler,
     ResponseActFuture, SyncArbiter, SyncContext, System, WrapFuture,
 };
 use rand::{thread_rng, Rng};
@@ -11,59 +30,6 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 const MESSAGES_PER_AERO: usize = 1;
-
-#[derive(Message)]
-#[rtype(result = "()")]
-struct EntryMessage {
-    aero_id: usize,
-    is_hotel: bool,
-    sender: Option<Arc<EntryRecipient>>,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-struct EntryHotelMessage {
-    sender: Option<Arc<Recipient<EntryHotelSuccess>>>,
-}
-
-struct EntryRecipient {
-    sender_success: Recipient<EntryAeroSuccess>,
-    sender_failed: Recipient<EntryFailed>,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-struct EntryAeroSuccess {
-    original_message: Arc<EntryMessage>,
-    aero_id: usize,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-struct EntryHotelSuccess {
-    id: usize,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-struct EntryFailed {
-    original_message: Arc<EntryMessage>,
-    aero_reference: Recipient<EntryMessage>,
-    aero_id: usize,
-}
-
-struct Orquestador {
-    aeroservices: HashMap<usize, Addr<AeroService>>,
-    hotel: Addr<Hotel>,
-}
-
-struct AeroService {
-    id: usize,
-}
-
-struct Hotel {
-    id: usize,
-}
 
 impl Actor for Orquestador {
     type Context = Context<Self>;

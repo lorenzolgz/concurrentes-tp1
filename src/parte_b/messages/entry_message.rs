@@ -3,7 +3,7 @@ extern crate actix;
 use crate::actors::entry_recipient::EntryRecipient;
 use actix::Message;
 use std::sync::Arc;
-use std::time::{SystemTime};
+use std::time::SystemTime;
 
 #[derive(Message)]
 #[rtype(result = "()")]

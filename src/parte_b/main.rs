@@ -7,6 +7,7 @@ use crate::actors::hotel::Hotel;
 use crate::actors::orquestador::Orquestador;
 use crate::messages::entry_message::EntryMessage;
 use actix::{Actor, SyncArbiter, System};
+use std::time::{SystemTime};
 use common::airlines::AIRLINES;
 use common::helper::get_max_requests_count;
 use common::record::Record;
@@ -47,6 +48,7 @@ fn main() {
                 aero_id: record.airline.to_string(),
                 is_hotel: record.package,
                 sender: Option::None,
+                time: SystemTime::now(),
             });
         }
     });

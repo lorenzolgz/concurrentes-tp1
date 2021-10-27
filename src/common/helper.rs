@@ -22,3 +22,9 @@ pub fn get_max_requests_count() -> isize {
         }
     };
 }
+
+pub fn fake_sleep(laps: isize) {
+    for _i in 0..laps {
+        for _j in 0..laps {}
+    }
+}

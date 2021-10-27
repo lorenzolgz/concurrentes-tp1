@@ -3,6 +3,7 @@ use crate::messages::entry_aero_success::EntryAeroSuccess;
 use crate::messages::entry_failed::EntryFailed;
 use crate::messages::entry_message::EntryMessage;
 use actix::{Actor, Handler, SyncContext};
+use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
 
@@ -18,8 +19,12 @@ impl Handler<EntryMessage> for AeroService {
     type Result = ();
     fn handle(&mut self, msg: EntryMessage, _ctx: &mut SyncContext<Self>) -> Self::Result {
         println!("[AEROSERVICE {}] recibo entry", self.id);
+        fake_sleep(thread_rng().gen_range(5000..7000));
         let is_success = thread_rng().gen_bool(0.5);
-        println!("[AEROSERVICE {}] is_success={}", self.id, is_success);
+        println!(
+            "[AEROSERVICE {}] contesto is_success={}",
+            self.id, is_success
+        );
         let copy_msg = Arc::from(msg);
         let recipient = copy_msg.sender.as_ref().unwrap();
 

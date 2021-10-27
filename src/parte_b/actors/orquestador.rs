@@ -1,6 +1,7 @@
 extern crate actix;
 
 use crate::actors::aeroservice::AeroService;
+use crate::actors::benchmark::Benchmark;
 use crate::actors::entry_recipient::EntryRecipient;
 use crate::actors::hotel::Hotel;
 use crate::messages::entry_aero_success::EntryAeroSuccess;
@@ -8,6 +9,7 @@ use crate::messages::entry_failed::EntryFailed;
 use crate::messages::entry_hotel_message::EntryHotelMessage;
 use crate::messages::entry_hotel_success::EntryHotelSuccess;
 use crate::messages::entry_message::EntryMessage;
+use crate::messages::request_completed::RequestCompleted;
 use actix::clock::sleep;
 use actix::Addr;
 use actix::{Actor, ActorFutureExt, AsyncContext, Context, Handler, ResponseActFuture, WrapFuture};
@@ -19,6 +21,7 @@ use std::time::{Duration, SystemTime};
 pub struct Orquestador {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,
     pub(crate) hotel: Addr<Hotel>,
+    pub(crate) benchmark: Addr<Benchmark>,
 }
 
 impl Actor for Orquestador {
@@ -67,6 +70,10 @@ impl Handler<EntryAeroSuccess> for Orquestador {
                     sender: Some(Arc::from(_ctx.address().recipient())),
                 })
                 .unwrap()
+        } else {
+            self.benchmark.do_send(RequestCompleted {
+                time_elapsed: msg.elapsed_time,
+            })
         }
     }
 }

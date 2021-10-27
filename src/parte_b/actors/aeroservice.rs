@@ -27,13 +27,13 @@ impl Handler<EntryMessage> for AeroService {
         );
         let copy_msg = Arc::from(msg);
         let recipient = copy_msg.sender.as_ref().unwrap();
-
         if is_success {
             recipient
                 .sender_success
                 .try_send(EntryAeroSuccess {
                     aero_id: self.id.to_string(),
                     original_message: copy_msg.clone(),
+                    elapsed_time: copy_msg.time.elapsed().unwrap(),
                 })
                 .unwrap()
         } else {

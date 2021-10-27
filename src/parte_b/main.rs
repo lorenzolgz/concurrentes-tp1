@@ -3,6 +3,7 @@ mod actors;
 mod messages;
 
 use crate::actors::aeroservice::AeroService;
+use crate::actors::benchmark::Benchmark;
 use crate::actors::hotel::Hotel;
 use crate::actors::orquestador::Orquestador;
 use crate::messages::entry_message::EntryMessage;
@@ -35,10 +36,15 @@ fn main() {
         }
 
         let hotel_service = SyncArbiter::start(max_requests, || Hotel { id: 1 });
+        let benchmark_service = Benchmark {
+            finished_requests: 0,
+            average_time: 0.0,
+        };
         let otro_orq = Arc::from(
             Orquestador {
                 aeroservices,
                 hotel: hotel_service,
+                benchmark: benchmark_service.start(),
             }
             .start(),
         );

@@ -6,7 +6,7 @@ use crate::actors::aeroservice::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::hotel::Hotel;
 use crate::actors::orquestador::Orquestador;
-use crate::messages::entry_message::EntryMessage;
+use crate::messages::entry::Entry;
 use actix::{Actor, SyncArbiter, System};
 use common::airlines::AIRLINES;
 use common::helper::get_max_requests_count;
@@ -50,7 +50,7 @@ fn main() {
         );
         for record in reader.deserialize() {
             let record: Record = record.expect("Unable to parse record");
-            otro_orq.do_send(EntryMessage {
+            otro_orq.do_send(Entry {
                 aero_id: record.airline.to_string(),
                 is_hotel: record.package,
                 sender: Option::None,

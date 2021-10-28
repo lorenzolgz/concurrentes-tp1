@@ -1,6 +1,6 @@
 extern crate actix;
-use crate::messages::entry_hotel_message::EntryHotelMessage;
-use crate::messages::entry_hotel_success::EntryHotelSuccess;
+use crate::messages::hotel_entry::HotelEntry;
+use crate::messages::hotel_success::HotelSuccess;
 use actix::{Actor, Handler, SyncContext};
 use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
@@ -11,15 +11,15 @@ impl Actor for Hotel {
     type Context = SyncContext<Self>;
 }
 
-impl Handler<EntryHotelMessage> for Hotel {
+impl Handler<HotelEntry> for Hotel {
     type Result = ();
-    fn handle(&mut self, msg: EntryHotelMessage, _ctx: &mut SyncContext<Self>) -> Self::Result {
+    fn handle(&mut self, msg: HotelEntry, _ctx: &mut SyncContext<Self>) -> Self::Result {
         println!("[HOTEL] recibi entry");
         fake_sleep(thread_rng().gen_range(5000..7000));
         println!("[HOTEL] contesto success");
         msg.sender
             .unwrap()
-            .try_send(EntryHotelSuccess {
+            .try_send(HotelSuccess {
                 elapsed_time: msg.original_start_time.elapsed().unwrap(),
             })
             .unwrap();

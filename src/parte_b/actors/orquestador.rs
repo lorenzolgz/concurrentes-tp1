@@ -4,11 +4,11 @@ use crate::actors::aeroservice::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::entry_recipient::EntryRecipient;
 use crate::actors::hotel::Hotel;
-use crate::messages::entry_aero_success::EntryAeroSuccess;
-use crate::messages::entry_failed::EntryFailed;
-use crate::messages::entry_hotel_message::EntryHotelMessage;
-use crate::messages::entry_hotel_success::EntryHotelSuccess;
-use crate::messages::entry_message::EntryMessage;
+use crate::messages::aero_success::AeroSuccess;
+use crate::messages::aero_failed::AeroFailed;
+use crate::messages::hotel_entry::HotelEntry;
+use crate::messages::hotel_success::HotelSuccess;
+use crate::messages::entry::Entry;
 use crate::messages::request_completed::RequestCompleted;
 use actix::clock::sleep;
 use actix::Addr;
@@ -28,10 +28,10 @@ impl Actor for Orquestador {
     type Context = Context<Self>;
 }
 
-impl Handler<EntryMessage> for Orquestador {
+impl Handler<Entry> for Orquestador {
     type Result = ();
 
-    fn handle(&mut self, _msg: EntryMessage, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, _msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
         println!(
             "[Orquestador] recibi entry message de aeropuerto {}",
             _msg.aero_id
@@ -42,7 +42,7 @@ impl Handler<EntryMessage> for Orquestador {
                 // TODO imprimir tambien el aero_id
             },
             |aero_service| {
-                aero_service.do_send(EntryMessage {
+                aero_service.do_send(Entry {
                     aero_id: _msg.aero_id,
                     start_time: _msg.start_time,
                     is_hotel: _msg.is_hotel,
@@ -56,17 +56,17 @@ impl Handler<EntryMessage> for Orquestador {
     }
 }
 
-impl Handler<EntryAeroSuccess> for Orquestador {
+impl Handler<AeroSuccess> for Orquestador {
     type Result = ();
 
-    fn handle(&mut self, msg: EntryAeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
         println!(
             "[Orquestador] recibí success de AEROSERVICE {}",
             msg.aero_id
         );
         if msg.original_message.is_hotel {
             self.hotel
-                .try_send(EntryHotelMessage {
+                .try_send(HotelEntry {
                     sender: Some(Arc::from(_ctx.address().recipient())),
                     original_start_time: SystemTime::now(),
                 })
@@ -79,10 +79,10 @@ impl Handler<EntryAeroSuccess> for Orquestador {
     }
 }
 
-impl Handler<EntryFailed> for Orquestador {
+impl Handler<AeroFailed> for Orquestador {
     type Result = ResponseActFuture<Self, ()>;
 
-    fn handle(&mut self, msg: EntryFailed, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: AeroFailed, _ctx: &mut Context<Self>) -> Self::Result {
         let millis_to_sleep = thread_rng().gen_range(500..2000);
         let timer = SystemTime::now();
         println!(
@@ -95,7 +95,7 @@ impl Handler<EntryFailed> for Orquestador {
                 println!("[Orquestador] me desperté despues de {}/{} millis para contestarle a AEROSERVICE {}",
                          timer.elapsed().unwrap().as_millis(),
                          millis_to_sleep,msg.aero_id);
-                msg.aero_reference.try_send(EntryMessage{
+                msg.aero_reference.try_send(Entry {
                     aero_id: msg.aero_id,
                     start_time: msg.original_message.start_time,
                     is_hotel: msg.original_message.is_hotel,
@@ -105,10 +105,10 @@ impl Handler<EntryFailed> for Orquestador {
     }
 }
 
-impl Handler<EntryHotelSuccess> for Orquestador {
+impl Handler<HotelSuccess> for Orquestador {
     type Result = ();
 
-    fn handle(&mut self, msg: EntryHotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: HotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
         println!("[Orquestador] recibí success de HOTEL");
         self.benchmark.do_send(RequestCompleted {
             time_elapsed: msg.elapsed_time,

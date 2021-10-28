@@ -5,6 +5,6 @@ use std::time::Duration;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct EntryHotelSuccess {
+pub struct HotelSuccess {
     pub(crate) elapsed_time: Duration,
 }

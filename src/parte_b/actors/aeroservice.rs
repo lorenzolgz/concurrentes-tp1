@@ -1,7 +1,7 @@
 extern crate actix;
-use crate::messages::entry_aero_success::EntryAeroSuccess;
-use crate::messages::entry_failed::EntryFailed;
-use crate::messages::entry_message::EntryMessage;
+use crate::messages::aero_success::AeroSuccess;
+use crate::messages::aero_failed::AeroFailed;
+use crate::messages::entry::Entry;
 use actix::{Actor, Handler, SyncContext};
 use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
@@ -15,9 +15,9 @@ impl Actor for AeroService {
     type Context = SyncContext<Self>;
 }
 
-impl Handler<EntryMessage> for AeroService {
+impl Handler<Entry> for AeroService {
     type Result = ();
-    fn handle(&mut self, msg: EntryMessage, _ctx: &mut SyncContext<Self>) -> Self::Result {
+    fn handle(&mut self, msg: Entry, _ctx: &mut SyncContext<Self>) -> Self::Result {
         println!("[AEROSERVICE {}] recibo entry", self.id);
         fake_sleep(thread_rng().gen_range(5000..7000));
         let is_success = thread_rng().gen_bool(0.5);
@@ -30,7 +30,7 @@ impl Handler<EntryMessage> for AeroService {
         if is_success {
             recipient
                 .sender_success
-                .try_send(EntryAeroSuccess {
+                .try_send(AeroSuccess {
                     aero_id: self.id.to_string(),
                     original_message: copy_msg.clone(),
                     elapsed_time: copy_msg.start_time.elapsed().unwrap(),
@@ -39,7 +39,7 @@ impl Handler<EntryMessage> for AeroService {
         } else {
             recipient
                 .sender_failed
-                .try_send(EntryFailed {
+                .try_send(AeroFailed {
                     original_message: copy_msg.clone(),
                     aero_reference: _ctx.address().recipient(),
                     aero_id: self.id.to_string(),

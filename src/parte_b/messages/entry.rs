@@ -7,7 +7,7 @@ use std::time::SystemTime;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct EntryMessage {
+pub struct Entry {
     pub(crate) aero_id: String,
     pub(crate) is_hotel: bool,
     pub(crate) sender: Option<Arc<EntryRecipient>>,

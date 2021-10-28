@@ -18,7 +18,6 @@ impl Handler<HotelEntry> for HotelService {
         fake_sleep(thread_rng().gen_range(5000..7000));
         println!("[HOTEL] contesto success");
         msg.sender
-            .unwrap()
             .try_send(HotelSuccess {
                 elapsed_time: msg.original_start_time.elapsed().unwrap(),
                 original_origin: msg.original_origin,

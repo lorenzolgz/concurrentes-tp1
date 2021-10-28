@@ -69,7 +69,7 @@ impl Handler<AeroSuccess> for Orchestrator {
         if msg.original_message.includes_hotel {
             self.hotel
                 .try_send(HotelEntry {
-                    sender: Some(Arc::from(_ctx.address().recipient())),
+                    sender: Arc::from(_ctx.address().recipient()),
                     original_start_time: SystemTime::now(),
                     original_origin: msg.original_message.origin.to_string(),
                     original_destination: msg.original_message.destination.to_string(),

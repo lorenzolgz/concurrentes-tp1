@@ -67,14 +67,12 @@ impl Handler<AeroSuccess> for Orchestrator {
             msg.aero_id
         );
         if msg.original_message.includes_hotel {
-            self.hotel
-                .try_send(HotelEntry {
-                    sender: Arc::from(_ctx.address().recipient()),
-                    original_start_time: SystemTime::now(),
-                    original_origin: msg.original_message.origin.to_string(),
-                    original_destination: msg.original_message.destination.to_string(),
-                })
-                .unwrap()
+            self.hotel.do_send(HotelEntry {
+                sender: Arc::from(_ctx.address().recipient()),
+                original_start_time: SystemTime::now(),
+                original_origin: msg.original_message.origin.to_string(),
+                original_destination: msg.original_message.destination.to_string(),
+            })
         } else {
             self.benchmark.do_send(RequestCompleted {
                 origin: msg.original_message.origin.to_string(),

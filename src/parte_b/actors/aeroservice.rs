@@ -33,7 +33,7 @@ impl Handler<EntryMessage> for AeroService {
                 .try_send(EntryAeroSuccess {
                     aero_id: self.id.to_string(),
                     original_message: copy_msg.clone(),
-                    elapsed_time: copy_msg.time.elapsed().unwrap(),
+                    elapsed_time: copy_msg.start_time.elapsed().unwrap(),
                 })
                 .unwrap()
         } else {

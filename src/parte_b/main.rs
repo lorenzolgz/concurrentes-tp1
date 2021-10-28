@@ -54,7 +54,7 @@ fn main() {
                 aero_id: record.airline.to_string(),
                 is_hotel: record.package,
                 sender: Option::None,
-                time: SystemTime::now(),
+                start_time: SystemTime::now(),
             });
         }
     });

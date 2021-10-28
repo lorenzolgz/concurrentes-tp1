@@ -44,7 +44,7 @@ impl Handler<EntryMessage> for Orquestador {
             |aero_service| {
                 aero_service.do_send(EntryMessage {
                     aero_id: _msg.aero_id,
-                    time: _msg.time,
+                    start_time: _msg.start_time,
                     is_hotel: _msg.is_hotel,
                     sender: Option::Some(Arc::from(EntryRecipient {
                         sender_failed: _ctx.address().recipient(),
@@ -97,7 +97,7 @@ impl Handler<EntryFailed> for Orquestador {
                          millis_to_sleep,msg.aero_id);
                 msg.aero_reference.try_send(EntryMessage{
                     aero_id: msg.aero_id,
-                    time: msg.original_message.time,
+                    start_time: msg.original_message.start_time,
                     is_hotel: msg.original_message.is_hotel,
                     sender: msg.original_message.sender.clone()
                 }).unwrap()

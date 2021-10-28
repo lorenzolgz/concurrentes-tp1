@@ -11,5 +11,5 @@ pub struct EntryMessage {
     pub(crate) aero_id: String,
     pub(crate) is_hotel: bool,
     pub(crate) sender: Option<Arc<EntryRecipient>>,
-    pub(crate) time: SystemTime,
+    pub(crate) start_time: SystemTime,
 }

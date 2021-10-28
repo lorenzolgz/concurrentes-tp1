@@ -5,12 +5,18 @@ pub fn get_max_requests_count() -> isize {
     let mut line = String::new();
     let default_max_requests = 5;
     let error_message = "[Main] Expected a number greater than zero.";
-    println!("[Main] Enter maximum amount of parallel requests (or press enter to use default \"{}\")", default_max_requests);
+    println!(
+        "[Main] Enter maximum amount of parallel requests (or press enter to use default \"{}\")",
+        default_max_requests
+    );
     io::stdin()
         .read_line(&mut line)
         .expect("failed to read from stdin");
-    if line.trim().is_empty(){
-        println!("[Main] Using default max parallel request \"{}\"", default_max_requests);
+    if line.trim().is_empty() {
+        println!(
+            "[Main] Using default max parallel request \"{}\"",
+            default_max_requests
+        );
         default_max_requests
     } else {
         match line.trim().parse::<u32>() {

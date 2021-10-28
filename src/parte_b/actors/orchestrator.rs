@@ -1,9 +1,9 @@
 extern crate actix;
 
-use crate::actors::aeroservice::AeroService;
+use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::entry_recipient::EntryRecipient;
-use crate::actors::hotel::Hotel;
+use crate::actors::hotel_service::HotelService;
 use crate::messages::aero_success::AeroSuccess;
 use crate::messages::aero_failed::AeroFailed;
 use crate::messages::hotel_entry::HotelEntry;
@@ -18,17 +18,17 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
-pub struct Orquestador {
+pub struct Orchestrator {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,
-    pub(crate) hotel: Addr<Hotel>,
+    pub(crate) hotel: Addr<HotelService>,
     pub(crate) benchmark: Addr<Benchmark>,
 }
 
-impl Actor for Orquestador {
+impl Actor for Orchestrator {
     type Context = Context<Self>;
 }
 
-impl Handler<Entry> for Orquestador {
+impl Handler<Entry> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, _msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
@@ -56,7 +56,7 @@ impl Handler<Entry> for Orquestador {
     }
 }
 
-impl Handler<AeroSuccess> for Orquestador {
+impl Handler<AeroSuccess> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
@@ -79,7 +79,7 @@ impl Handler<AeroSuccess> for Orquestador {
     }
 }
 
-impl Handler<AeroFailed> for Orquestador {
+impl Handler<AeroFailed> for Orchestrator {
     type Result = ResponseActFuture<Self, ()>;
 
     fn handle(&mut self, msg: AeroFailed, _ctx: &mut Context<Self>) -> Self::Result {
@@ -105,7 +105,7 @@ impl Handler<AeroFailed> for Orquestador {
     }
 }
 
-impl Handler<HotelSuccess> for Orquestador {
+impl Handler<HotelSuccess> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: HotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {

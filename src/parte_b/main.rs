@@ -2,10 +2,10 @@ extern crate actix;
 mod actors;
 mod messages;
 
-use crate::actors::aeroservice::AeroService;
+use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
-use crate::actors::hotel::Hotel;
-use crate::actors::orquestador::Orquestador;
+use crate::actors::hotel_service::HotelService;
+use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
 use actix::{Actor, SyncArbiter, System};
 use common::airlines::AIRLINES;
@@ -35,13 +35,13 @@ fn main() {
             );
         }
 
-        let hotel_service = SyncArbiter::start(max_requests, || Hotel {});
+        let hotel_service = SyncArbiter::start(max_requests, || HotelService {});
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,
         };
         let otro_orq = Arc::from(
-            Orquestador {
+            Orchestrator {
                 aeroservices,
                 hotel: hotel_service,
                 benchmark: benchmark_service.start(),

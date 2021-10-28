@@ -5,13 +5,13 @@ use actix::{Actor, Handler, SyncContext};
 use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
 
-pub struct Hotel {}
+pub struct HotelService {}
 
-impl Actor for Hotel {
+impl Actor for HotelService {
     type Context = SyncContext<Self>;
 }
 
-impl Handler<HotelEntry> for Hotel {
+impl Handler<HotelEntry> for HotelService {
     type Result = ();
     fn handle(&mut self, msg: HotelEntry, _ctx: &mut SyncContext<Self>) -> Self::Result {
         println!("[HOTEL] recibi entry");

@@ -3,25 +3,31 @@ use std::{fs, io};
 
 pub fn get_max_requests_count() -> isize {
     let mut line = String::new();
+    let default_max_requests = 5;
     let error_message = "[Main] Expected a number greater than zero.";
-    println!("[Main] Enter maximum amount of parallel requests to web services:");
+    println!("[Main] Enter maximum amount of parallel requests (or press enter to use default \"{}\")", default_max_requests);
     io::stdin()
         .read_line(&mut line)
         .expect("failed to read from stdin");
-    return match line.trim().parse::<u32>() {
-        Ok(i) => {
-            if i > 0 {
-                i as isize
-            } else {
+    if line.trim().is_empty(){
+        println!("[Main] Using default max parallel request \"{}\"", default_max_requests);
+        default_max_requests
+    } else {
+        match line.trim().parse::<u32>() {
+            Ok(max_parallel_count) => {
+                if max_parallel_count > 0 {
+                    max_parallel_count as isize
+                } else {
+                    println!("{}", error_message);
+                    get_max_requests_count()
+                }
+            }
+            Err(..) => {
                 println!("{}", error_message);
                 get_max_requests_count()
             }
         }
-        Err(..) => {
-            println!("{}", error_message);
-            get_max_requests_count()
-        }
-    };
+    }
 }
 
 pub fn get_csv_file_path() -> String {

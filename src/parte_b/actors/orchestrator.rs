@@ -99,14 +99,16 @@ impl Handler<AeroFailed> for Orchestrator {
                 println!("[Orquestador] me desperté despues de {}/{} millis para contestarle a AEROSERVICE {}",
                          timer.elapsed().unwrap().as_millis(),
                          millis_to_sleep,msg.aero_id);
-                msg.aero_reference.try_send(Entry {
+                msg.aero_reference.do_send(Entry {
                     aero_id: msg.aero_id,
                     origin: msg.original_message.origin.to_string(),
                     destination: msg.original_message.destination.to_string(),
                     start_time: msg.original_message.start_time,
                     includes_hotel: msg.original_message.includes_hotel,
                     sender: msg.original_message.sender.clone()
-                }).unwrap()
+                }).unwrap_or_else(|error| {
+                    println!("[Orquestador] Unable to send Entry to AeroService, got error {}", error);
+                })
             }))
     }
 }

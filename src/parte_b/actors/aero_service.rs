@@ -1,6 +1,6 @@
 extern crate actix;
-use crate::messages::aero_success::AeroSuccess;
 use crate::messages::aero_failed::AeroFailed;
+use crate::messages::aero_success::AeroSuccess;
 use crate::messages::entry::Entry;
 use actix::{Actor, Handler, SyncContext};
 use common::helper::fake_sleep;

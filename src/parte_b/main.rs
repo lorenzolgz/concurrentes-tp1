@@ -70,5 +70,5 @@ fn main() {
         }
     });
 
-    system.run().unwrap();
+    system.run().expect("Unable to start event loop from main");
 }

@@ -10,7 +10,7 @@ use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
 use actix::{Actor, SyncArbiter, System};
 use common::airlines::AIRLINES;
-use common::helper::get_max_requests_count;
+use common::helper::{get_csv_file_path, get_max_requests_count};
 use common::record::Record;
 use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
@@ -20,8 +20,8 @@ use std::time::SystemTime;
 
 fn main() {
     let max_requests = get_max_requests_count() as usize;
-    let csv = fs::read_to_string("./resources/reservations.csv")
-        .expect("Something went wrong reading the file");
+    let path = get_csv_file_path();
+    let csv = fs::read_to_string(path).expect("Something went wrong reading the file");
 
     let mut reader = csv::Reader::from_reader(csv.as_bytes());
     let system = System::new();

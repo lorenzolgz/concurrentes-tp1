@@ -9,7 +9,7 @@ use crate::common::record::Record;
 use crate::logger::{log_info, log_start, log_stop};
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
-use common::helper::stringify_top_10;
+use common::helper::{get_csv_file_path, stringify_top_10};
 use common::routs_stats::RoutsStats;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -31,8 +31,8 @@ fn main() -> Result<(), csv::Error> {
         log_send.clone(),
     );
 
-    let csv = fs::read_to_string("./resources/reservations.csv")
-        .expect("Something went wrong reading the file");
+    let path = get_csv_file_path();
+    let csv = fs::read_to_string(path).expect("Something went wrong reading the file");
 
     log_info(
         format!("[Main] reservations.csv: \n{}", csv),

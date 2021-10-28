@@ -1,5 +1,5 @@
 use crate::rout_info::RoutInfo;
-use std::io;
+use std::{fs, io};
 
 pub fn get_max_requests_count() -> isize {
     let mut line = String::new();
@@ -20,6 +20,39 @@ pub fn get_max_requests_count() -> isize {
         Err(..) => {
             println!("{}", error_message);
             get_max_requests_count()
+        }
+    };
+}
+
+pub fn get_csv_file_path() -> String {
+    let mut line = String::new();
+    let default_path = "./resources/reservations.csv".to_string();
+    let error_message = "[Main] Expected a string for the path";
+    println!(
+        "[Main] Enter path for csv file (or press enter to use default \"{}\")",
+        default_path
+    );
+    io::stdin()
+        .read_line(&mut line)
+        .expect("failed to read from stdin");
+    return match line.trim().parse::<String>() {
+        Ok(parsed_line) => {
+            if parsed_line.is_empty() {
+                println!("[Main] Using default csv path \"{}\"", default_path);
+                default_path
+            } else {
+                fs::read_to_string(parsed_line).unwrap_or_else(|error| {
+                    println!(
+                        "[Main] Expected a valid path but {} was thrown, please try again",
+                        error
+                    );
+                    get_csv_file_path()
+                })
+            }
+        }
+        Err(..) => {
+            println!("{}", error_message);
+            get_csv_file_path()
         }
     };
 }

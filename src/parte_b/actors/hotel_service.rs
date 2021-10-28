@@ -17,12 +17,10 @@ impl Handler<HotelEntry> for HotelService {
         println!("[HOTEL] recibi entry");
         fake_sleep(thread_rng().gen_range(5000..7000));
         println!("[HOTEL] contesto success");
-        msg.sender
-            .try_send(HotelSuccess {
-                elapsed_time: msg.original_start_time.elapsed().unwrap(),
-                original_origin: msg.original_origin,
-                original_destination: msg.original_destination,
-            })
-            .unwrap();
+        msg.sender.do_send(HotelSuccess {
+            elapsed_time: msg.original_start_time.elapsed().unwrap(),
+            original_origin: msg.original_origin,
+            original_destination: msg.original_destination,
+        });
     }
 }

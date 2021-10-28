@@ -1,19 +1,13 @@
-pub struct RoutInfo {
-    pub(crate) rout: String,
-    pub(crate) number_of_trips: i32,
-}
+use crate::rout_info::RoutInfo;
 
 pub struct RoutsStats {
     routs: Vec<RoutInfo>,
-    pub(crate) stopped: bool,
+    pub stopped: bool,
 }
 
-impl RoutInfo {
-    pub fn new(rout: String, number_of_trips: i32) -> RoutInfo {
-        RoutInfo {
-            rout,
-            number_of_trips,
-        }
+impl Default for RoutsStats {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -26,7 +20,8 @@ impl RoutsStats {
         }
     }
 
-    pub fn add(&mut self, rout: String) {
+    pub fn add(&mut self, origin: String, destination: String) {
+        let rout = format!("{}-{}", origin, destination);
         let result = self.routs.iter().position(|r| r.rout == rout);
         match result {
             Some(i) => self.routs[i] = RoutInfo::new(rout, self.routs[i].number_of_trips + 1),
@@ -38,7 +33,7 @@ impl RoutsStats {
         self.stopped = true;
     }
 
-    pub fn top10(&mut self) -> Vec<&RoutInfo> {
+    pub fn build_top_10(&mut self) -> Vec<&RoutInfo> {
         let mut result = Vec::new();
         let mut result_len = 10;
 

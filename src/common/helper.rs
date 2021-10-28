@@ -1,3 +1,4 @@
+use crate::rout_info::RoutInfo;
 use std::io;
 
 pub fn get_max_requests_count() -> isize {
@@ -27,4 +28,12 @@ pub fn fake_sleep(laps: isize) {
     for _i in 0..laps {
         for _j in 0..laps {}
     }
+}
+
+pub fn stringify_top_10(top_10: Vec<&RoutInfo>) -> String {
+    let mut msg = "Top 10 more requested routs \n".to_string();
+    for i in top_10 {
+        msg += &*format!("Rout:{}, N:{}\n", i.rout, i.number_of_trips)
+    }
+    msg
 }

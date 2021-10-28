@@ -1,7 +1,6 @@
 mod logger;
 mod record_manager;
 mod record_manager_factory;
-mod routs_stats;
 
 extern crate common;
 
@@ -10,7 +9,8 @@ use crate::common::record::Record;
 use crate::logger::{log_info, log_start, log_stop};
 use crate::record_manager::RecordManager;
 use crate::record_manager_factory::RecordManagerFactory;
-use crate::routs_stats::RoutsStats;
+use common::helper::stringify_top_10;
+use common::routs_stats::RoutsStats;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -49,11 +49,10 @@ fn main() -> Result<(), csv::Error> {
     for record in reader.deserialize() {
         let record: Record = record?;
 
-        let rout = format!("{}-{}", record.origin, record.destination);
         let local_rout_stats = rout_stats.clone();
 
         match local_rout_stats.lock() {
-            Ok(mut g) => g.add(rout),
+            Ok(mut g) => g.add(record.origin.to_string(), record.destination.to_string()),
             Err(e) => panic!("Mutex error at rout_stats {}", e),
         }
 
@@ -101,15 +100,7 @@ fn rout_stats_monitor(clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<Stri
             Err(e) => panic!("Mutex error of rout_stats at rout_stats_monitor {}", e),
         };
 
-        let result = guard.top10();
-
-        let mut msg = "Top 10 more requested routs \n".to_string();
-
-        for i in result {
-            msg += &*format!("Rout:{}, N:{}\n", i.rout, i.number_of_trips)
-        }
-
-        log_info(msg, log.clone());
+        log_info(stringify_top_10(guard.build_top_10()), log.clone());
 
         if guard.stopped {
             break;

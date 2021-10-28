@@ -11,6 +11,7 @@ use actix::{Actor, SyncArbiter, System};
 use common::airlines::AIRLINES;
 use common::helper::get_max_requests_count;
 use common::record::Record;
+use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
 use std::fs;
 use std::sync::Arc;
@@ -39,6 +40,7 @@ fn main() {
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,
+            stats: RoutsStats::new(),
         };
         let otro_orq = Arc::from(
             Orchestrator {

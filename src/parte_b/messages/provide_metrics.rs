@@ -1,0 +1,7 @@
+extern crate actix;
+
+use actix::Message;
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct ProvideMetrics {}

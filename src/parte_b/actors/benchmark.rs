@@ -1,4 +1,5 @@
 extern crate actix;
+use crate::messages::provide_metrics::ProvideMetrics;
 use crate::messages::request_completed::RequestCompleted;
 use actix::{Actor, Context, Handler};
 use common::helper::stringify_top_10;
@@ -8,6 +9,7 @@ pub struct Benchmark {
     pub(crate) finished_requests: u128,
     pub(crate) average_time: f64,
     pub(crate) stats: RoutsStats,
+    pub(crate) already_provided: bool,
 }
 
 impl Actor for Benchmark {
@@ -24,14 +26,27 @@ impl Handler<RequestCompleted> for Benchmark {
             msg.destination
         );
         self.update_average_time(&msg);
-        println!("[BENCHMARKER] new average is: {}", self.average_time);
-        // Updating routes
         self.stats
             .add(msg.origin.to_string(), msg.destination.to_string());
-        println!(
-            "[BENCHMARKER] {}",
-            stringify_top_10(self.stats.build_top_10())
-        );
+        self.already_provided = false;
+    }
+}
+
+impl Handler<ProvideMetrics> for Benchmark {
+    type Result = ();
+    fn handle(&mut self, _msg: ProvideMetrics, _ctx: &mut Context<Self>) -> Self::Result {
+        if !self.already_provided {
+            println!("[BENCHMARKER] Delivering metrics");
+            println!(
+                "[BENCHMARKER] Average time to completion is: {} millis",
+                self.average_time
+            );
+            println!(
+                "[BENCHMARKER] {}",
+                stringify_top_10(self.stats.build_top_10())
+            );
+            self.already_provided = true;
+        }
     }
 }
 

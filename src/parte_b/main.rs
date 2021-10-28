@@ -4,6 +4,7 @@ mod messages;
 
 use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
+use crate::actors::cron::Cron;
 use crate::actors::hotel_service::HotelService;
 use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
@@ -40,13 +41,19 @@ fn main() {
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,
+            already_provided: false,
             stats: RoutsStats::new(),
-        };
+        }
+        .start();
+        Cron {
+            benchmark: benchmark_service.clone(),
+        }
+        .start();
         let otro_orq = Arc::from(
             Orchestrator {
                 aeroservices,
                 hotel: hotel_service,
-                benchmark: benchmark_service.start(),
+                benchmark: benchmark_service,
             }
             .start(),
         );

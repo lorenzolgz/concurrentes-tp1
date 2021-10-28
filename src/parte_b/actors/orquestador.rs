@@ -68,6 +68,7 @@ impl Handler<EntryAeroSuccess> for Orquestador {
             self.hotel
                 .try_send(EntryHotelMessage {
                     sender: Some(Arc::from(_ctx.address().recipient())),
+                    original_start_time: SystemTime::now(),
                 })
                 .unwrap()
         } else {
@@ -108,6 +109,9 @@ impl Handler<EntryHotelSuccess> for Orquestador {
     type Result = ();
 
     fn handle(&mut self, msg: EntryHotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
-        println!("[Orquestador] recibí success de HOTEL {}", msg.id);
+        println!("[Orquestador] recibí success de HOTEL");
+        self.benchmark.do_send(RequestCompleted {
+            time_elapsed: msg.elapsed_time,
+        })
     }
 }

@@ -35,7 +35,7 @@ fn main() {
             );
         }
 
-        let hotel_service = SyncArbiter::start(max_requests, || Hotel { id: 1 });
+        let hotel_service = SyncArbiter::start(max_requests, || Hotel {});
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,

@@ -1,9 +1,10 @@
 extern crate actix;
 
 use actix::Message;
+use std::time::Duration;
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct EntryHotelSuccess {
-    pub(crate) id: usize,
+    pub(crate) elapsed_time: Duration,
 }

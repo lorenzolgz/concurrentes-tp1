@@ -21,6 +21,8 @@ impl Handler<HotelEntry> for HotelService {
             .unwrap()
             .try_send(HotelSuccess {
                 elapsed_time: msg.original_start_time.elapsed().unwrap(),
+                original_origin: msg.original_origin,
+                original_destination: msg.original_destination,
             })
             .unwrap();
     }

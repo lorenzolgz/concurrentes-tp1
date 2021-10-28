@@ -9,5 +9,7 @@ use std::time::SystemTime;
 #[rtype(result = "()")]
 pub struct HotelEntry {
     pub(crate) sender: Option<Arc<Recipient<HotelSuccess>>>,
+    pub(crate) original_origin: String,
+    pub(crate) original_destination: String,
     pub(crate) original_start_time: SystemTime,
 }

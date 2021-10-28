@@ -15,8 +15,10 @@ impl Handler<RequestCompleted> for Benchmark {
     type Result = ();
     fn handle(&mut self, msg: RequestCompleted, _ctx: &mut Context<Self>) -> Self::Result {
         println!(
-            "[BENCHMARKER] recibi request completed, elapsed={}",
-            msg.time_elapsed.as_millis()
+            "[BENCHMARKER] recibi request completed, elapsed={}, origin={}, dest={}",
+            msg.time_elapsed.as_millis(),
+            msg.origin,
+            msg.destination
         );
         let updated_finished_count = self.finished_requests + 1;
         self.average_time = (self.average_time * (self.finished_requests as f64)

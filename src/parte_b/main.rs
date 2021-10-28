@@ -52,7 +52,9 @@ fn main() {
             let record: Record = record.expect("Unable to parse record");
             otro_orq.do_send(Entry {
                 aero_id: record.airline.to_string(),
-                is_hotel: record.package,
+                origin: record.origin.to_string(),
+                destination: record.destination.to_string(),
+                includes_hotel: record.package,
                 sender: Option::None,
                 start_time: SystemTime::now(),
             });

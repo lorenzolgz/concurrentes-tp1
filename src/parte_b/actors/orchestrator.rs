@@ -45,7 +45,9 @@ impl Handler<Entry> for Orchestrator {
                 aero_service.do_send(Entry {
                     aero_id: _msg.aero_id,
                     start_time: _msg.start_time,
-                    is_hotel: _msg.is_hotel,
+                    origin: _msg.origin,
+                    destination: _msg.destination,
+                    includes_hotel: _msg.includes_hotel,
                     sender: Option::Some(Arc::from(EntryRecipient {
                         sender_failed: _ctx.address().recipient(),
                         sender_success: _ctx.address().recipient(),
@@ -64,15 +66,19 @@ impl Handler<AeroSuccess> for Orchestrator {
             "[Orquestador] recibí success de AEROSERVICE {}",
             msg.aero_id
         );
-        if msg.original_message.is_hotel {
+        if msg.original_message.includes_hotel {
             self.hotel
                 .try_send(HotelEntry {
                     sender: Some(Arc::from(_ctx.address().recipient())),
                     original_start_time: SystemTime::now(),
+                    original_origin: msg.original_message.origin.to_string(),
+                    original_destination: msg.original_message.destination.to_string(),
                 })
                 .unwrap()
         } else {
             self.benchmark.do_send(RequestCompleted {
+                origin: msg.original_message.origin.to_string(),
+                destination: msg.original_message.destination.to_string(),
                 time_elapsed: msg.elapsed_time,
             })
         }
@@ -97,8 +103,10 @@ impl Handler<AeroFailed> for Orchestrator {
                          millis_to_sleep,msg.aero_id);
                 msg.aero_reference.try_send(Entry {
                     aero_id: msg.aero_id,
+                    origin: msg.original_message.origin.to_string(),
+                    destination: msg.original_message.destination.to_string(),
                     start_time: msg.original_message.start_time,
-                    is_hotel: msg.original_message.is_hotel,
+                    includes_hotel: msg.original_message.includes_hotel,
                     sender: msg.original_message.sender.clone()
                 }).unwrap()
             }))
@@ -112,6 +120,8 @@ impl Handler<HotelSuccess> for Orchestrator {
         println!("[Orquestador] recibí success de HOTEL");
         self.benchmark.do_send(RequestCompleted {
             time_elapsed: msg.elapsed_time,
+            origin: msg.original_origin,
+            destination: msg.original_destination,
         })
     }
 }

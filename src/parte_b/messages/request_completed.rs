@@ -7,4 +7,6 @@ use std::time::Duration;
 #[rtype(result = "()")]
 pub struct RequestCompleted {
     pub(crate) time_elapsed: Duration,
+    pub(crate) origin: String,
+    pub(crate) destination: String,
 }

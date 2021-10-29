@@ -96,9 +96,19 @@ impl Handler<AeroFailed> for Orchestrator {
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))
             .into_actor(self)
             .map(move |_result, _me, _ctx| {
-                println!("[Orquestador] me desperté despues de {}/{} millis para contestarle a AEROSERVICE {}",
-                         timer.elapsed().unwrap().as_millis(),
-                         millis_to_sleep,msg.aero_id);
+                match timer.elapsed() {
+                    Ok(duration) => {
+                        println!("[Orquestador] Woke up after {} (asked for: {}) to retry request to AEROSERVICE {}",
+                                 duration.as_millis(),
+                                 millis_to_sleep,
+                                 msg.aero_id);
+                    }
+                    Err(error) => {
+                        println!("[Orquestador] Unable to calculate duration while replying to AEROSERVICE {}, got error {}",
+                                 msg.aero_id,
+                                 error);
+                    }
+                }
                 msg.aero_reference.do_send(Entry {
                     aero_id: msg.aero_id,
                     origin: msg.original_message.origin.to_string(),

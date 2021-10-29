@@ -17,17 +17,25 @@ impl Handler<HotelEntry> for HotelService {
         println!("[HOTEL] recibi entry");
         fake_sleep(thread_rng().gen_range(5000..7000));
         println!("[HOTEL] contesto success");
-        msg.sender
-            .do_send(HotelSuccess {
-                elapsed_time: msg.original_start_time.elapsed().unwrap(),
-                original_origin: msg.original_origin,
-                original_destination: msg.original_destination,
-            })
-            .unwrap_or_else(|error| {
-                println!(
-                    "[HOTEL] Unable to send HotelSuccess back to sender, got error {}",
-                    error
-                );
-            });
+        match msg.original_start_time.elapsed() {
+            Ok(duration) => {
+                msg.sender
+                    .do_send(HotelSuccess {
+                        elapsed_time: duration,
+                        original_origin: msg.original_origin,
+                        original_destination: msg.original_destination,
+                    })
+                    .unwrap_or_else(|error| {
+                        println!(
+                            "[HOTEL] Unable to send HotelSuccess back to sender, got error {}",
+                            error
+                        );
+                    });
+            }
+            Err(error) => {
+                println!("[HOTEL] Unable to calculate duration while replying to an HotelEntry, got error {}",
+                         error);
+            }
+        }
     }
 }

@@ -10,5 +10,5 @@ use std::time::Duration;
 pub(crate) struct AeroSuccess {
     pub(crate) original_message: Arc<Entry>,
     pub(crate) aero_id: String,
-    pub(crate) elapsed_time: Duration,
+    pub(crate) elapsed_time: Option<Duration>,
 }

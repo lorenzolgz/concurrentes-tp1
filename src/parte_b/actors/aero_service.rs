@@ -25,15 +25,23 @@ impl Handler<Entry> for AeroService {
             "[AEROSERVICE {}] contesto is_success={}",
             self.id, is_success
         );
-        let copy_msg = Arc::from(msg);
-        let recipient = copy_msg.sender.as_ref().unwrap();
+        let orchestrator = msg.sender.clone();
+        let elapsed_time = msg.start_time.elapsed();
         if is_success {
-            recipient
-                .sender_success
-                .do_send(AeroSuccess {
+            orchestrator
+                .try_send(AeroSuccess {
                     aero_id: self.id.to_string(),
-                    original_message: copy_msg.clone(),
-                    elapsed_time: copy_msg.start_time.elapsed().unwrap(),
+                    original_message: Arc::from(msg),
+                    elapsed_time: elapsed_time.map_or_else(
+                        |error| {
+                            println!(
+                                "[AEROSERVICE {}] Unable to calculate elapsed time, got error {}",
+                                self.id, error
+                            );
+                            Option::None
+                        },
+                        Option::Some,
+                    ),
                 })
                 .unwrap_or_else(|error| {
                     println!(
@@ -42,10 +50,9 @@ impl Handler<Entry> for AeroService {
                     );
                 });
         } else {
-            recipient
-                .sender_failed
-                .do_send(AeroFailed {
-                    original_message: copy_msg.clone(),
+            orchestrator
+                .try_send(AeroFailed {
+                    original_message: Arc::from(msg),
                     aero_reference: _ctx.address().recipient(),
                     aero_id: self.id.to_string(),
                 })

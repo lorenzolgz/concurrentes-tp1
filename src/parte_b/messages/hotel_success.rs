@@ -6,7 +6,7 @@ use std::time::Duration;
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct HotelSuccess {
-    pub(crate) elapsed_time: Duration,
+    pub(crate) elapsed_time: Option<Duration>,
     pub(crate) original_origin: String,
     pub(crate) original_destination: String,
 }

@@ -15,7 +15,6 @@ use common::record::Record;
 use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
 use std::fs;
-use std::sync::Arc;
 use std::time::SystemTime;
 
 fn main() {
@@ -49,14 +48,12 @@ fn main() {
             benchmark: benchmark_service.clone(),
         }
         .start();
-        let otro_orq = Arc::from(
-            Orchestrator {
-                aeroservices,
-                hotel: hotel_service,
-                benchmark: benchmark_service,
-            }
-            .start(),
-        );
+        let otro_orq = Orchestrator {
+            aeroservices,
+            hotel: hotel_service,
+            benchmark: benchmark_service,
+        }
+        .start();
         for record in reader.deserialize() {
             let record: Record = record.expect("Unable to parse record");
             otro_orq.do_send(Entry {
@@ -64,7 +61,7 @@ fn main() {
                 origin: record.origin.to_string(),
                 destination: record.destination.to_string(),
                 includes_hotel: record.package,
-                sender: Option::None,
+                sender: otro_orq.clone(),
                 start_time: SystemTime::now(),
             });
         }

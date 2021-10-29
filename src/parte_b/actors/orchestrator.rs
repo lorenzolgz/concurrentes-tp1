@@ -2,7 +2,6 @@ extern crate actix;
 
 use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
-use crate::actors::entry_recipient::EntryRecipient;
 use crate::actors::hotel_service::HotelService;
 use crate::messages::aero_failed::AeroFailed;
 use crate::messages::aero_success::AeroSuccess;
@@ -31,30 +30,18 @@ impl Actor for Orchestrator {
 impl Handler<Entry> for Orchestrator {
     type Result = ();
 
-    fn handle(&mut self, _msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
         println!(
             "[Orquestador] recibi entry message de aeropuerto {}",
-            _msg.aero_id
+            msg.aero_id
         );
-        self.aeroservices.get(&_msg.aero_id).map_or_else(
+        self.aeroservices.get(&msg.aero_id).map_or_else(
             || {
                 println!("[Orquestador] Unable to find aeroservice for an airline")
                 // TODO imprimir tambien el aero_id
             },
-            |aero_service| {
-                aero_service.do_send(Entry {
-                    aero_id: _msg.aero_id,
-                    start_time: _msg.start_time,
-                    origin: _msg.origin,
-                    destination: _msg.destination,
-                    includes_hotel: _msg.includes_hotel,
-                    sender: Option::Some(Arc::from(EntryRecipient {
-                        sender_failed: _ctx.address().recipient(),
-                        sender_success: _ctx.address().recipient(),
-                    })),
-                })
-            },
-        )
+            |aero_service| aero_service.do_send(msg),
+        );
     }
 }
 

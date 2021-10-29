@@ -30,21 +30,31 @@ impl Handler<Entry> for AeroService {
         if is_success {
             recipient
                 .sender_success
-                .try_send(AeroSuccess {
+                .do_send(AeroSuccess {
                     aero_id: self.id.to_string(),
                     original_message: copy_msg.clone(),
                     elapsed_time: copy_msg.start_time.elapsed().unwrap(),
                 })
-                .unwrap()
+                .unwrap_or_else(|error| {
+                    println!(
+                        "[AEROSERVICE {}] Unable to send AeroSuccess back to sender, got error {}",
+                        self.id, error
+                    );
+                });
         } else {
             recipient
                 .sender_failed
-                .try_send(AeroFailed {
+                .do_send(AeroFailed {
                     original_message: copy_msg.clone(),
                     aero_reference: _ctx.address().recipient(),
                     aero_id: self.id.to_string(),
                 })
-                .unwrap()
+                .unwrap_or_else(|error| {
+                    println!(
+                        "[AEROSERVICE {}] Unable to send AeroFailed back to sender, got error {}",
+                        self.id, error
+                    );
+                });
         }
     }
 }

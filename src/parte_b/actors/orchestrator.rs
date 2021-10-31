@@ -35,13 +35,12 @@ impl Handler<Entry> for Orchestrator {
 
     fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[Orquestador] recibi entry message de aeropuerto ".to_string()
-                + &msg.aero_id),
+            log_entry: ("[ORCHESTRATOR] Got Entry Message || ".to_string() + &msg.describe()),
         });
         self.aeroservices.get(&msg.aero_id).map_or_else(
             || {
                 self.logger.do_send(LogMessage {
-                    log_entry: ("[Orquestador] Unable to find aeroservice for an airline "
+                    log_entry: ("[ORCHESTRATOR] Unable to find aeroservice for an airline "
                         .to_string()),
                 });
                 // TODO imprimir tambien el aero_id
@@ -56,7 +55,7 @@ impl Handler<AeroSuccess> for Orchestrator {
 
     fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string() + &msg.aero_id),
+            log_entry: "[ORCHESTRATOR] Got AeroSuccess Message || ".to_string() + &msg.describe(),
         });
 
         if msg.original_message.includes_hotel {
@@ -83,11 +82,11 @@ impl Handler<AeroFailed> for Orchestrator {
         let millis_to_sleep = thread_rng().gen_range(500..2000);
         let timer = SystemTime::now();
         self.logger.do_send(LogMessage {
-            log_entry: ("[Orquestador] recibí failed de AEROSERVICE ".to_string()
-                + &msg.aero_id
-                + &", me voy a dormir ".to_string()
+            log_entry: "[ORCHESTRATOR] Got AeroFailed Message || ".to_string()
+                + &msg.describe()
+                + ", will retry requesting in "
                 + &millis_to_sleep.to_string()
-                + &" millis".to_string()),
+                + " millis",
         });
 
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))
@@ -96,15 +95,15 @@ impl Handler<AeroFailed> for Orchestrator {
                 match timer.elapsed() {
                     Ok(duration) => {
                         me.logger.do_send(LogMessage{
-                            log_entry: ("[Orquestador] Woke up after ".to_string() + &duration.as_millis().to_string() +
-                                &" (asked for: ".to_string() + &millis_to_sleep.to_string() + &") to retry request to AEROSERVICE ".to_string() +
+                            log_entry: ("[ORCHESTRATOR] Will retry pending request after ".to_string() + &duration.as_millis().to_string() +
+                                &" (asked for: ".to_string() + &millis_to_sleep.to_string() + &") to AEROSERVICE ".to_string() +
                             &msg.aero_id),
                         });
 
                     }
                     Err(error) => {
                         me.logger.do_send(LogMessage{
-                            log_entry: ("[Orquestador] Unable to calculate duration while replying to AEROSERVICE ".to_string() +
+                            log_entry: ("[ORCHESTRATOR] Unable to calculate duration while replying to AEROSERVICE ".to_string() +
                                 &msg.aero_id + &", got error ".to_string() + &error.to_string()),
                         });
                     }
@@ -118,7 +117,7 @@ impl Handler<AeroFailed> for Orchestrator {
                     sender: msg.original_message.sender.clone()
                 }).unwrap_or_else(|error| {
                     me.logger.do_send(LogMessage{
-                        log_entry: ("[Orquestador] Unable to send Entry to AeroService, got error ".to_string() +
+                        log_entry: ("[ORCHESTRATOR] Unable to send Entry to AeroService, got error ".to_string() +
                             &error.to_string()),
                     });
                 })
@@ -131,7 +130,8 @@ impl Handler<HotelSuccess> for Orchestrator {
 
     fn handle(&mut self, msg: HotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[Orquestador] recibi success de HOTEL".to_string()),
+            log_entry: ("[ORCHESTRATOR] Got HotelSuccess Message || ".to_string()
+                + &msg.describe()),
         });
         self.benchmark.do_send(RequestCompleted {
             time_elapsed: msg.elapsed_time,

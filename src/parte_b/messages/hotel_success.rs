@@ -10,3 +10,12 @@ pub struct HotelSuccess {
     pub(crate) original_origin: String,
     pub(crate) original_destination: String,
 }
+
+impl HotelSuccess {
+    pub fn describe(&self) -> String {
+        format!(
+            "Origin: {}, Destination: {}",
+            self.original_origin, self.original_destination
+        )
+    }
+}

@@ -45,7 +45,6 @@ impl Handler<Entry> for AeroService {
         if is_success {
             orchestrator
                 .try_send(AeroSuccess {
-                    aero_id: self.id.to_string(),
                     original_message: ref_msg.clone(),
                     elapsed_time: elapsed_time.map_or_else(
                         |error| {

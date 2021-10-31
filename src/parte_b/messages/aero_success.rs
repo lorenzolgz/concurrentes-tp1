@@ -9,6 +9,11 @@ use std::time::Duration;
 #[rtype(result = "()")]
 pub(crate) struct AeroSuccess {
     pub(crate) original_message: Arc<Entry>,
-    pub(crate) aero_id: String,
     pub(crate) elapsed_time: Option<Duration>,
+}
+
+impl AeroSuccess {
+    pub fn describe(&self) -> String {
+        self.original_message.describe()
+    }
 }

@@ -11,3 +11,9 @@ pub struct AeroFailed {
     pub(crate) aero_reference: Recipient<Entry>,
     pub(crate) aero_id: String,
 }
+
+impl AeroFailed {
+    pub fn describe(&self) -> String {
+        self.original_message.describe()
+    }
+}

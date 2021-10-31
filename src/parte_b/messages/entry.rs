@@ -14,3 +14,12 @@ pub struct Entry {
     pub(crate) sender: Addr<Orchestrator>,
     pub(crate) start_time: SystemTime,
 }
+
+impl Entry {
+    pub fn describe(&self) -> String {
+        format!(
+            "Origin: {}, Destination: {}, Airline: {}, Package: {}",
+            self.origin, self.destination, self.aero_id, self.includes_hotel
+        )
+    }
+}

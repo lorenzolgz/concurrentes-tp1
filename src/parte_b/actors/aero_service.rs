@@ -24,7 +24,8 @@ impl Handler<Entry> for AeroService {
         self.logger.do_send(LogMessage {
             log_entry: ("[AEROSERVICE ".to_string()
                 + &self.id.to_string()
-                + &"] recibo entry".to_string()),
+                + &"] Got Entry Message ".to_string()
+                + &msg.describe()),
         });
         fake_sleep(thread_rng().gen_range(5000..7000));
         let is_success = thread_rng().gen_bool(0.5);

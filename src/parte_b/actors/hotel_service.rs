@@ -1,11 +1,16 @@
 extern crate actix;
 use crate::messages::hotel_entry::HotelEntry;
 use crate::messages::hotel_success::HotelSuccess;
-use actix::{Actor, Handler, SyncContext};
+use actix::{Actor, Addr, Handler, SyncContext};
 use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
+use std::sync::Arc;
+use crate::actors::logger::Logger;
+use crate::messages::log_message::LogMessage;
 
-pub struct HotelService {}
+pub struct HotelService {
+    pub(crate) logger: Arc<Addr<Logger>>,
+}
 
 impl Actor for HotelService {
     type Context = SyncContext<Self>;
@@ -14,9 +19,13 @@ impl Actor for HotelService {
 impl Handler<HotelEntry> for HotelService {
     type Result = ();
     fn handle(&mut self, msg: HotelEntry, _ctx: &mut SyncContext<Self>) -> Self::Result {
-        println!("[HOTEL] recibi entry");
+        self.logger.do_send(LogMessage{
+            log_entry: ("[HOTEL] recibi entry").to_string(),
+        });
         fake_sleep(thread_rng().gen_range(5000..7000));
-        println!("[HOTEL] contesto success");
+        self.logger.do_send(LogMessage{
+            log_entry: ("[HOTEL] contesto success").to_string(),
+        });
         msg.sender
             .do_send(HotelSuccess {
                 original_origin: msg.original_origin,

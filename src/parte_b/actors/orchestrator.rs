@@ -3,6 +3,7 @@ extern crate actix;
 use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::hotel_service::HotelService;
+use crate::actors::logger::Logger;
 use crate::messages::aero_failed::AeroFailed;
 use crate::messages::aero_success::AeroSuccess;
 use crate::messages::entry::Entry;
@@ -16,11 +17,13 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
+use crate::messages::log_message::LogMessage;
 
 pub struct Orchestrator {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,
     pub(crate) hotel: Addr<HotelService>,
     pub(crate) benchmark: Addr<Benchmark>,
+    pub(crate) logger: Addr<Logger>,
 }
 
 impl Actor for Orchestrator {
@@ -31,13 +34,14 @@ impl Handler<Entry> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
-        println!(
-            "[Orquestador] recibi entry message de aeropuerto {}",
-            msg.aero_id
-        );
+        self.logger.do_send(LogMessage{
+            log_entry: ("[Orquestador] recibi entry message de aeropuerto ".to_string() + &msg.aero_id.to_string()),
+        });
         self.aeroservices.get(&msg.aero_id).map_or_else(
             || {
-                println!("[Orquestador] Unable to find aeroservice for an airline")
+                self.logger.do_send(LogMessage{
+                    log_entry: ("[Orquestador] Unable to find aeroservice for an airline ".to_string()),
+                });
                 // TODO imprimir tambien el aero_id
             },
             |aero_service| aero_service.do_send(msg),
@@ -49,10 +53,10 @@ impl Handler<AeroSuccess> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
-        println!(
-            "[Orquestador] recibí success de AEROSERVICE {}",
-            msg.aero_id
-        );
+       self.logger.do_send(LogMessage{
+            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string() + &msg.aero_id.to_string()),
+        });
+
         if msg.original_message.includes_hotel {
             self.hotel.do_send(HotelEntry {
                 sender: Arc::from(_ctx.address().recipient()),
@@ -76,10 +80,11 @@ impl Handler<AeroFailed> for Orchestrator {
     fn handle(&mut self, msg: AeroFailed, _ctx: &mut Context<Self>) -> Self::Result {
         let millis_to_sleep = thread_rng().gen_range(500..2000);
         let timer = SystemTime::now();
-        println!(
-            "[Orquestador] recibí failed de AEROSERVICE {}, me voy a dormir {} millis",
-            msg.aero_id, millis_to_sleep
-        );
+        self.logger.do_send(LogMessage{
+            log_entry: ("[Orquestador] recibí failed de AEROSERVICE ".to_string() + &msg.aero_id.to_string() +
+            &", me voy a dormir ".to_string() + &millis_to_sleep.to_string() + &" millis".to_string()),
+        });
+
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))
             .into_actor(self)
             .map(move |_result, _me, _ctx| {
@@ -89,11 +94,23 @@ impl Handler<AeroFailed> for Orchestrator {
                                  duration.as_millis(),
                                  millis_to_sleep,
                                  msg.aero_id);
+
+                        /*self.logger.do_send(LogMessage{
+                            log_entry: ("[Orquestador] Woke up after ".to_string() + &duration.as_millis().to_string() +
+                                &" (asked for: ".to_string() + &millis_to_sleep.to_string() + &") to retry request to AEROSERVICE ".to_string() +
+                            &msg.aero_id.to_string()),
+                        });*/
+
                     }
                     Err(error) => {
                         println!("[Orquestador] Unable to calculate duration while replying to AEROSERVICE {}, got error {}",
                                  msg.aero_id,
                                  error);
+
+                        /*self.logger.do_send(LogMessage{
+                            log_entry: ("[Orquestador] Unable to calculate duration while replying to AEROSERVICE ".to_string() +
+                                &msg.aero_id.to_string() + &", got error ".to_string() + &error.to_string()),
+                        });*/
                     }
                 }
                 msg.aero_reference.do_send(Entry {
@@ -105,6 +122,10 @@ impl Handler<AeroFailed> for Orchestrator {
                     sender: msg.original_message.sender.clone()
                 }).unwrap_or_else(|error| {
                     println!("[Orquestador] Unable to send Entry to AeroService, got error {}", error);
+                    /*self.logger.do_send(LogMessage{
+                        log_entry: ("[Orquestador] Unable to send Entry to AeroService, got error ".to_string() +
+                            &error.to_string()),
+                    });*/
                 })
             }))
     }
@@ -114,7 +135,9 @@ impl Handler<HotelSuccess> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: HotelSuccess, _ctx: &mut Context<Self>) -> Self::Result {
-        println!("[Orquestador] recibí success de HOTEL");
+        self.logger.do_send(LogMessage {
+            log_entry: ("[Orquestador] recibi success de HOTEL".to_string()),
+        });
         self.benchmark.do_send(RequestCompleted {
             time_elapsed: msg.elapsed_time,
             origin: msg.original_origin,

@@ -2,13 +2,16 @@ extern crate actix;
 use crate::messages::aero_failed::AeroFailed;
 use crate::messages::aero_success::AeroSuccess;
 use crate::messages::entry::Entry;
-use actix::{Actor, Handler, SyncContext};
+use actix::{Actor, Addr, Handler, SyncContext};
 use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
+use crate::actors::logger::Logger;
+use crate::messages::log_message::LogMessage;
 
 pub struct AeroService {
     pub(crate) id: String,
+    pub(crate) logger: Arc<Addr<Logger>>,
 }
 
 impl Actor for AeroService {
@@ -18,13 +21,19 @@ impl Actor for AeroService {
 impl Handler<Entry> for AeroService {
     type Result = ();
     fn handle(&mut self, msg: Entry, _ctx: &mut SyncContext<Self>) -> Self::Result {
-        println!("[AEROSERVICE {}] recibo entry", self.id);
+        self.logger.do_send( LogMessage{
+            log_entry: ("[AEROSERVICE ".to_string() + &self.id.to_string() + &"] recibo entry".to_string()),
+            }
+        );
         fake_sleep(thread_rng().gen_range(5000..7000));
         let is_success = thread_rng().gen_bool(0.5);
-        println!(
-            "[AEROSERVICE {}] contesto is_success={}",
-            self.id, is_success
+
+        self.logger.do_send( LogMessage{
+            log_entry: ("[AEROSERVICE ".to_string() + &self.id.to_string() + &"] contesto is_success=".to_string() +
+            &is_success.to_string()),
+        }
         );
+
         let orchestrator = msg.sender.clone();
         let elapsed_time = msg.start_time.elapsed();
         if is_success {

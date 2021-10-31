@@ -13,7 +13,7 @@ pub struct Logger {
 impl Logger {
     pub fn new(log_receive: Receiver<String>) -> Logger {
         let file_name = format!(
-            "./logs/{}.txt",
+            "./logs/parte_a/{}.txt",
             chrono::offset::Local::now()
                 .format("%Y-%m-%d %H:%M:%S")
                 .to_string()

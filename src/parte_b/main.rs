@@ -5,6 +5,7 @@ mod messages;
 use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::cron::Cron;
+use crate::actors::logger::Logger;
 use crate::actors::hotel_service::HotelService;
 use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
@@ -15,9 +16,18 @@ use common::record::Record;
 use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
 use std::fs;
+use std::fs::File;
 use std::time::SystemTime;
+use std::sync::Arc;
 
 fn main() {
+    let file_name = format!(
+        "./logs/parte_b/{}.txt",
+        chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string()
+    );
+    let file_logger = File::create(file_name).expect("Error creating logger file");
     let max_requests = get_max_requests_count() as usize;
     let path = get_csv_file_path();
     let csv = fs::read_to_string(path).expect("Something went wrong reading the file");
@@ -26,22 +36,27 @@ fn main() {
     let system = System::new();
 
     system.block_on(async {
+        let logger = Logger{file: file_logger}.start();
         let mut aeroservices = HashMap::new();
+        let ref_logger = Arc::from(logger.clone());
         for airline in AIRLINES {
+            let copy_logger = ref_logger.clone();
             aeroservices.insert(
                 airline.to_string(),
-                SyncArbiter::start(max_requests, move || AeroService {
+                SyncArbiter::start(max_requests,   move|| AeroService {
                     id: airline.to_string(),
+                    logger: copy_logger.clone(),
                 }),
             );
         }
 
-        let hotel_service = SyncArbiter::start(max_requests, || HotelService {});
+        let hotel_service = SyncArbiter::start(max_requests, move || HotelService {logger: ref_logger.clone()});
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,
             already_provided: false,
             stats: RoutsStats::new(),
+            logger: logger.clone(),
         }
         .start();
         Cron {
@@ -52,6 +67,7 @@ fn main() {
             aeroservices,
             hotel: hotel_service,
             benchmark: benchmark_service,
+            logger: logger.clone(),
         }
         .start();
         for record in reader.deserialize() {

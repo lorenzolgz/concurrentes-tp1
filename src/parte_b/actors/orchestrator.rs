@@ -9,6 +9,7 @@ use crate::messages::aero_success::AeroSuccess;
 use crate::messages::entry::Entry;
 use crate::messages::hotel_entry::HotelEntry;
 use crate::messages::hotel_success::HotelSuccess;
+use crate::messages::log_message::LogMessage;
 use crate::messages::request_completed::RequestCompleted;
 use actix::clock::sleep;
 use actix::Addr;
@@ -17,7 +18,6 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
-use crate::messages::log_message::LogMessage;
 
 pub struct Orchestrator {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,
@@ -34,13 +34,15 @@ impl Handler<Entry> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
-        self.logger.do_send(LogMessage{
-            log_entry: ("[Orquestador] recibi entry message de aeropuerto ".to_string() + &msg.aero_id.to_string()),
+        self.logger.do_send(LogMessage {
+            log_entry: ("[Orquestador] recibi entry message de aeropuerto ".to_string()
+                + &msg.aero_id.to_string()),
         });
         self.aeroservices.get(&msg.aero_id).map_or_else(
             || {
-                self.logger.do_send(LogMessage{
-                    log_entry: ("[Orquestador] Unable to find aeroservice for an airline ".to_string()),
+                self.logger.do_send(LogMessage {
+                    log_entry: ("[Orquestador] Unable to find aeroservice for an airline "
+                        .to_string()),
                 });
                 // TODO imprimir tambien el aero_id
             },
@@ -53,8 +55,9 @@ impl Handler<AeroSuccess> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
-       self.logger.do_send(LogMessage{
-            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string() + &msg.aero_id.to_string()),
+        self.logger.do_send(LogMessage {
+            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string()
+                + &msg.aero_id.to_string()),
         });
 
         if msg.original_message.includes_hotel {
@@ -80,9 +83,12 @@ impl Handler<AeroFailed> for Orchestrator {
     fn handle(&mut self, msg: AeroFailed, _ctx: &mut Context<Self>) -> Self::Result {
         let millis_to_sleep = thread_rng().gen_range(500..2000);
         let timer = SystemTime::now();
-        self.logger.do_send(LogMessage{
-            log_entry: ("[Orquestador] recibí failed de AEROSERVICE ".to_string() + &msg.aero_id.to_string() +
-            &", me voy a dormir ".to_string() + &millis_to_sleep.to_string() + &" millis".to_string()),
+        self.logger.do_send(LogMessage {
+            log_entry: ("[Orquestador] recibí failed de AEROSERVICE ".to_string()
+                + &msg.aero_id.to_string()
+                + &", me voy a dormir ".to_string()
+                + &millis_to_sleep.to_string()
+                + &" millis".to_string()),
         });
 
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))

@@ -1,13 +1,13 @@
 extern crate actix;
 
+use crate::actors::logger::Logger;
+use crate::messages::log_message::LogMessage;
 use crate::messages::provide_metrics::ProvideMetrics;
 use crate::messages::request_completed::RequestCompleted;
 use actix::{Actor, Addr, Context, Handler};
 use common::helper::stringify_top_10;
 use common::routs_stats::RoutsStats;
 use std::time::Duration;
-use crate::actors::logger::Logger;
-use crate::messages::log_message::LogMessage;
 
 pub struct Benchmark {
     pub(crate) finished_requests: u128,
@@ -24,13 +24,19 @@ impl Actor for Benchmark {
 impl Handler<RequestCompleted> for Benchmark {
     type Result = ();
     fn handle(&mut self, msg: RequestCompleted, _ctx: &mut Context<Self>) -> Self::Result {
-        self.logger.do_send(LogMessage{
-            log_entry: ("[BENCHMARKER] recibi request completed, elapsed=".to_string() +
-            &msg.time_elapsed.map_or_else(
-                || { "N/A".to_string() },
-                |duration| { duration.as_millis().to_string() }
-            ).to_string() + &", origin=".to_string() + &msg.origin.to_string() +
-            &", dest=".to_string() + &msg.destination.to_string())
+        self.logger.do_send(LogMessage {
+            log_entry: ("[BENCHMARKER] recibi request completed, elapsed=".to_string()
+                + &msg
+                    .time_elapsed
+                    .map_or_else(
+                        || "N/A".to_string(),
+                        |duration| duration.as_millis().to_string(),
+                    )
+                    .to_string()
+                + &", origin=".to_string()
+                + &msg.origin.to_string()
+                + &", dest=".to_string()
+                + &msg.destination.to_string()),
         });
 
         // println!(
@@ -54,19 +60,19 @@ impl Handler<ProvideMetrics> for Benchmark {
     type Result = ();
     fn handle(&mut self, _msg: ProvideMetrics, _ctx: &mut Context<Self>) -> Self::Result {
         if !self.already_provided {
-
-            self.logger.do_send(LogMessage{
+            self.logger.do_send(LogMessage {
                 log_entry: "[BENCHMARKER] Delivering metrics".to_string(),
             });
 
-            self.logger.do_send(LogMessage{
-                log_entry: ("[BENCHMARKER] Average time to completion is: ".to_string() +
-                &self.average_time.to_string() + &" millis".to_string()),
+            self.logger.do_send(LogMessage {
+                log_entry: ("[BENCHMARKER] Average time to completion is: ".to_string()
+                    + &self.average_time.to_string()
+                    + &" millis".to_string()),
             });
 
-            self.logger.do_send(LogMessage{
-                log_entry: ("[BENCHMARKER] ".to_string() +
-                    &stringify_top_10(self.stats.build_top_10()).to_string()),
+            self.logger.do_send(LogMessage {
+                log_entry: ("[BENCHMARKER] ".to_string()
+                    + &stringify_top_10(self.stats.build_top_10()).to_string()),
             });
 
             self.already_provided = true;

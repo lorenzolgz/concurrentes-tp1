@@ -5,8 +5,8 @@ mod messages;
 use crate::actors::aero_service::AeroService;
 use crate::actors::benchmark::Benchmark;
 use crate::actors::cron::Cron;
-use crate::actors::logger::Logger;
 use crate::actors::hotel_service::HotelService;
+use crate::actors::logger::Logger;
 use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
 use actix::{Actor, SyncArbiter, System};
@@ -17,8 +17,8 @@ use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use std::time::SystemTime;
 use std::sync::Arc;
+use std::time::SystemTime;
 
 fn main() {
     let file_name = format!(
@@ -36,21 +36,23 @@ fn main() {
     let system = System::new();
 
     system.block_on(async {
-        let logger = Logger{file: file_logger}.start();
+        let logger = Logger { file: file_logger }.start();
         let mut aeroservices = HashMap::new();
         let ref_logger = Arc::from(logger.clone());
         for airline in AIRLINES {
             let copy_logger = ref_logger.clone();
             aeroservices.insert(
                 airline.to_string(),
-                SyncArbiter::start(max_requests,   move|| AeroService {
+                SyncArbiter::start(max_requests, move || AeroService {
                     id: airline.to_string(),
                     logger: copy_logger.clone(),
                 }),
             );
         }
 
-        let hotel_service = SyncArbiter::start(max_requests, move || HotelService {logger: ref_logger.clone()});
+        let hotel_service = SyncArbiter::start(max_requests, move || HotelService {
+            logger: ref_logger.clone(),
+        });
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,

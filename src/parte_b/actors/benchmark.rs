@@ -26,15 +26,12 @@ impl Handler<RequestCompleted> for Benchmark {
     fn handle(&mut self, msg: RequestCompleted, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
             log_entry: ("[BENCHMARKER] recibi request completed, elapsed=".to_string()
-                + &msg
-                    .time_elapsed
-                    .map_or_else(
-                        || "N/A".to_string(),
-                        |duration| duration.as_millis().to_string(),
-                    )
-                    .to_string()
+                + &msg.time_elapsed.map_or_else(
+                    || "N/A".to_string(),
+                    |duration| duration.as_millis().to_string(),
+                )
                 + &", origin=".to_string()
-                + &msg.origin.to_string()
+                + &msg.origin
                 + &", dest=".to_string()
                 + &msg.destination.to_string()),
         });
@@ -62,7 +59,7 @@ impl Handler<ProvideMetrics> for Benchmark {
 
             self.logger.do_send(LogMessage {
                 log_entry: ("[BENCHMARKER] ".to_string()
-                    + &stringify_top_10(self.stats.build_top_10()).to_string()),
+                    + &stringify_top_10(self.stats.build_top_10())),
             });
 
             self.already_provided = true;

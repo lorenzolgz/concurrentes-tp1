@@ -69,7 +69,7 @@ fn main() {
             aeroservices,
             hotel: hotel_service,
             benchmark: benchmark_service,
-            logger: logger.clone(),
+            logger,
         }
         .start();
         for record in reader.deserialize() {

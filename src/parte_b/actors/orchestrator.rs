@@ -36,7 +36,7 @@ impl Handler<Entry> for Orchestrator {
     fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
             log_entry: ("[Orquestador] recibi entry message de aeropuerto ".to_string()
-                + &msg.aero_id.to_string()),
+                + &msg.aero_id),
         });
         self.aeroservices.get(&msg.aero_id).map_or_else(
             || {
@@ -56,8 +56,7 @@ impl Handler<AeroSuccess> for Orchestrator {
 
     fn handle(&mut self, msg: AeroSuccess, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string()
-                + &msg.aero_id.to_string()),
+            log_entry: ("[Orquestador] recibí success de AEROSERVICE ".to_string() + &msg.aero_id),
         });
 
         if msg.original_message.includes_hotel {
@@ -85,7 +84,7 @@ impl Handler<AeroFailed> for Orchestrator {
         let timer = SystemTime::now();
         self.logger.do_send(LogMessage {
             log_entry: ("[Orquestador] recibí failed de AEROSERVICE ".to_string()
-                + &msg.aero_id.to_string()
+                + &msg.aero_id
                 + &", me voy a dormir ".to_string()
                 + &millis_to_sleep.to_string()
                 + &" millis".to_string()),
@@ -99,14 +98,14 @@ impl Handler<AeroFailed> for Orchestrator {
                         me.logger.do_send(LogMessage{
                             log_entry: ("[Orquestador] Woke up after ".to_string() + &duration.as_millis().to_string() +
                                 &" (asked for: ".to_string() + &millis_to_sleep.to_string() + &") to retry request to AEROSERVICE ".to_string() +
-                            &msg.aero_id.to_string()),
+                            &msg.aero_id),
                         });
 
                     }
                     Err(error) => {
                         me.logger.do_send(LogMessage{
                             log_entry: ("[Orquestador] Unable to calculate duration while replying to AEROSERVICE ".to_string() +
-                                &msg.aero_id.to_string() + &", got error ".to_string() + &error.to_string()),
+                                &msg.aero_id + &", got error ".to_string() + &error.to_string()),
                         });
                     }
                 }

@@ -93,30 +93,21 @@ impl Handler<AeroFailed> for Orchestrator {
 
         Box::pin(sleep(Duration::from_millis(millis_to_sleep))
             .into_actor(self)
-            .map(move |_result, _me, _ctx| {
+            .map(move |_result, me, _ctx| {
                 match timer.elapsed() {
                     Ok(duration) => {
-                        println!("[Orquestador] Woke up after {} (asked for: {}) to retry request to AEROSERVICE {}",
-                                 duration.as_millis(),
-                                 millis_to_sleep,
-                                 msg.aero_id);
-
-                        /*self.logger.do_send(LogMessage{
+                        me.logger.do_send(LogMessage{
                             log_entry: ("[Orquestador] Woke up after ".to_string() + &duration.as_millis().to_string() +
                                 &" (asked for: ".to_string() + &millis_to_sleep.to_string() + &") to retry request to AEROSERVICE ".to_string() +
                             &msg.aero_id.to_string()),
-                        });*/
+                        });
 
                     }
                     Err(error) => {
-                        println!("[Orquestador] Unable to calculate duration while replying to AEROSERVICE {}, got error {}",
-                                 msg.aero_id,
-                                 error);
-
-                        /*self.logger.do_send(LogMessage{
+                        me.logger.do_send(LogMessage{
                             log_entry: ("[Orquestador] Unable to calculate duration while replying to AEROSERVICE ".to_string() +
                                 &msg.aero_id.to_string() + &", got error ".to_string() + &error.to_string()),
-                        });*/
+                        });
                     }
                 }
                 msg.aero_reference.do_send(Entry {
@@ -127,11 +118,10 @@ impl Handler<AeroFailed> for Orchestrator {
                     includes_hotel: msg.original_message.includes_hotel,
                     sender: msg.original_message.sender.clone()
                 }).unwrap_or_else(|error| {
-                    println!("[Orquestador] Unable to send Entry to AeroService, got error {}", error);
-                    /*self.logger.do_send(LogMessage{
+                    me.logger.do_send(LogMessage{
                         log_entry: ("[Orquestador] Unable to send Entry to AeroService, got error ".to_string() +
                             &error.to_string()),
-                    });*/
+                    });
                 })
             }))
     }

@@ -3,6 +3,8 @@ extern crate actix;
 use actix::Message;
 use std::time::Duration;
 
+/// A message representation of a (Successful) Hotel Response, original origin and destination are kept
+/// for reporting and metric purposes
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct HotelSuccess {
@@ -12,6 +14,7 @@ pub struct HotelSuccess {
 }
 
 impl HotelSuccess {
+    /// Used to describe the message across logs
     pub fn describe(&self) -> String {
         format!(
             "Origin: {}, Destination: {}",

@@ -4,6 +4,8 @@ use crate::actors::orchestrator::Orchestrator;
 use actix::{Addr, Message};
 use std::time::SystemTime;
 
+/// A message representation of a CSV entry, that also holds the address of the main actor
+/// orchestrator and the start_time at which the request was first processed
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Entry {
@@ -16,6 +18,7 @@ pub struct Entry {
 }
 
 impl Entry {
+    /// Used to describe the message across logs
     pub fn describe(&self) -> String {
         format!(
             "Origin: {}, Destination: {}, Airline: {}, Package: {}",

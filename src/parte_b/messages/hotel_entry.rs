@@ -5,6 +5,8 @@ use actix::{Message, Recipient};
 use std::sync::Arc;
 use std::time::SystemTime;
 
+/// A message representation of an Hotel Request, original origin and destination are kept
+/// for reporting and metric purposes
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct HotelEntry {
@@ -15,6 +17,7 @@ pub struct HotelEntry {
 }
 
 impl HotelEntry {
+    /// Used to describe the message across logs
     pub fn describe(&self) -> String {
         format!(
             "Origin: {}, Destination: {}",

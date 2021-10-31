@@ -38,16 +38,6 @@ impl Handler<RequestCompleted> for Benchmark {
                 + &", dest=".to_string()
                 + &msg.destination.to_string()),
         });
-
-        // println!(
-        //     "[BENCHMARKER] recibi request completed, elapsed={}, origin={}, dest={}",
-        //     msg.time_elapsed.map_or_else(
-        //         || { "N/A".to_string() },
-        //         |duration| { duration.as_millis().to_string() }
-        //     ),
-        //     msg.origin,
-        //     msg.destination
-        // );
         msg.time_elapsed.map_or((), |duration| {
             self.update_average_time(duration);
         });

@@ -45,20 +45,25 @@ impl Handler<Entry> for AeroService {
                     original_message: Arc::from(msg),
                     elapsed_time: elapsed_time.map_or_else(
                         |error| {
-                            println!(
-                                "[AEROSERVICE {}] Unable to calculate elapsed time, got error {}",
-                                self.id, error
-                            );
+                            self.logger.do_send(LogMessage {
+                                log_entry: ("[AEROSERVICE ".to_string()
+                                    + &self.id.to_string()
+                                    + &"] Unable to calculate elapsed time, got error".to_string()
+                                    + &error.to_string()),
+                            });
                             Option::None
                         },
                         Option::Some,
                     ),
                 })
                 .unwrap_or_else(|error| {
-                    println!(
-                        "[AEROSERVICE {}] Unable to send AeroSuccess back to sender, got error {}",
-                        self.id, error
-                    );
+                    self.logger.do_send(LogMessage {
+                        log_entry: ("[AEROSERVICE ".to_string()
+                            + &self.id.to_string()
+                            + &"] Unable to send AeroSuccess back to sender, got error"
+                                .to_string()
+                            + &error.to_string()),
+                    });
                 });
         } else {
             orchestrator
@@ -68,10 +73,12 @@ impl Handler<Entry> for AeroService {
                     aero_id: self.id.to_string(),
                 })
                 .unwrap_or_else(|error| {
-                    println!(
-                        "[AEROSERVICE {}] Unable to send AeroFailed back to sender, got error {}",
-                        self.id, error
-                    );
+                    self.logger.do_send(LogMessage {
+                        log_entry: ("[AEROSERVICE ".to_string()
+                            + &self.id.to_string()
+                            + &"] Unable to send AeroFailed back to sender, got error".to_string()
+                            + &error.to_string()),
+                    });
                 });
         }
     }

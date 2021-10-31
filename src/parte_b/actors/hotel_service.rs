@@ -35,16 +35,17 @@ impl Handler<HotelEntry> for HotelService {
                         Option::Some(duration)
                     }
                     Err(error) => {
-                        println!("[HOTEL] Unable to calculate duration while replying to an HotelEntry, got error {}", error);
+                        self.logger.do_send(LogMessage {
+                            log_entry: ("[HOTEL] Unable to calculate duration while replying to an HotelEntry, got error ".to_string() + &error.to_string()),
+                        });
                         Option::None
                     }
                 },
             })
             .unwrap_or_else(|error| {
-                println!(
-                    "[HOTEL] Unable to send HotelSuccess back to sender, got error {}",
-                    error
-                );
+                self.logger.do_send(LogMessage {
+                    log_entry: ("[HOTEL] HOTEL] Unable to send HotelSuccess back to sender, got error ".to_string() + &error.to_string()),
+                });
             });
     }
 }

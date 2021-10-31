@@ -1,3 +1,4 @@
+use common::helper::{get_log_file_name, get_log_output_path};
 use std::fs::File;
 use std::io::Write;
 use std::sync::mpsc;
@@ -12,12 +13,7 @@ pub struct Logger {
 
 impl Logger {
     pub fn new(log_receive: Receiver<String>) -> Logger {
-        let file_name = format!(
-            "./logs/parte_a/{}.txt",
-            chrono::offset::Local::now()
-                .format("%Y-%m-%d %H:%M:%S")
-                .to_string()
-        );
+        let file_name = get_log_file_name(get_log_output_path("parte_a".to_string()));
         let file = File::create(file_name).expect("Error creating logger file");
 
         Logger { file, log_receive }

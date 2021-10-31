@@ -23,9 +23,8 @@ use std::sync::Arc;
 use std::time::SystemTime;
 
 fn main() {
-    let file_path = get_log_output_path("parte_b".to_string());
-    let file_logger =
-        File::create(get_log_file_name(file_path)).expect("Error creating logger file");
+    let file_name = get_log_file_name(get_log_output_path("parte_b".to_string()));
+    let file_logger = File::create(file_name).expect("Error creating logger file");
     let max_requests = get_max_requests_count() as usize;
     let path = get_csv_file_path();
     let csv = fs::read_to_string(path).expect("Something went wrong reading the file");

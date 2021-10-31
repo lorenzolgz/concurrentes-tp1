@@ -25,14 +25,14 @@ impl Handler<RequestCompleted> for Benchmark {
     type Result = ();
     fn handle(&mut self, msg: RequestCompleted, _ctx: &mut Context<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[BENCHMARKER] recibi request completed, elapsed=".to_string()
+            log_entry: ("[BENCHMARKER] Got RequestCompleted Message || Elapsed: ".to_string()
                 + &msg.time_elapsed.map_or_else(
                     || "N/A".to_string(),
                     |duration| duration.as_millis().to_string(),
                 )
-                + &", origin=".to_string()
+                + &", Origin: ".to_string()
                 + &msg.origin
-                + &", dest=".to_string()
+                + &", Destination: ".to_string()
                 + &msg.destination.to_string()),
         });
         msg.time_elapsed.map_or((), |duration| {

@@ -37,7 +37,8 @@ pub fn get_max_requests_count() -> isize {
     }
 }
 
-/// It allows the user to input the path to the csv otherwise to be processed
+/// It allows the user to input the path to the csv to be processed
+/// otherwise there's a default available
 pub fn get_csv_file_path() -> String {
     let mut line = String::new();
     let default_path = "./resources/reservations.csv".to_string();
@@ -71,6 +72,8 @@ pub fn get_csv_file_path() -> String {
     };
 }
 
+/// It allows the user to input the path to the output log directory
+/// otherwise there's a default available
 pub fn get_log_output_path(part: String) -> String {
     let mut line = String::new();
     let default_path = format!("./logs/{}/", part);
@@ -107,6 +110,7 @@ pub fn get_log_output_path(part: String) -> String {
     };
 }
 
+/// Builds the full log file name with path from current time
 pub fn get_log_file_name(base_path: String) -> String {
     format!(
         "{}{}.txt",
@@ -117,13 +121,14 @@ pub fn get_log_file_name(base_path: String) -> String {
     )
 }
 
+/// Simulates a heavy load of processing
 pub fn fake_sleep(laps: isize) {
     for _i in 0..laps {
         for _j in 0..laps {}
     }
 }
 
-/// It combers a vector of RoutInfos in a string format
+/// It converts a vector of RoutInfos in a string format to be printed
 pub fn stringify_top_10(top_10: Vec<&RoutInfo>) -> String {
     let mut msg = "Top 10 more requested routs \n".to_string();
     for i in top_10 {

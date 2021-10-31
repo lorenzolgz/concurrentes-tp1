@@ -69,6 +69,52 @@ pub fn get_csv_file_path() -> String {
     };
 }
 
+pub fn get_log_output_path(part: String) -> String {
+    let mut line = String::new();
+    let default_path = format!("./logs/{}/", part);
+    let error_message = "[Main] Expected a string for the path";
+    println!(
+        "[Main] Enter path for log output (or press enter to use default \"{}\")",
+        default_path
+    );
+    io::stdin()
+        .read_line(&mut line)
+        .expect("failed to read from stdin");
+    return match line.trim().parse::<String>() {
+        Ok(parsed_line) => {
+            if parsed_line.is_empty() {
+                println!("[Main] Using default log output path \"{}\"", default_path);
+                fs::create_dir_all(default_path.clone()).expect("Error creating logger directory");
+                default_path
+            } else {
+                let file_path = fs::read_to_string(parsed_line).unwrap_or_else(|error| {
+                    println!(
+                        "[Main] Expected a valid path but {} was thrown, please try again",
+                        error
+                    );
+                    get_log_output_path(part)
+                });
+                fs::create_dir_all(file_path.clone()).expect("Error creating logger directory");
+                file_path
+            }
+        }
+        Err(..) => {
+            println!("{}", error_message);
+            get_log_output_path(part)
+        }
+    };
+}
+
+pub fn get_log_file_name(base_path: String) -> String {
+    format!(
+        "{}{}.txt",
+        base_path,
+        chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string()
+    )
+}
+
 pub fn fake_sleep(laps: isize) {
     for _i in 0..laps {
         for _j in 0..laps {}

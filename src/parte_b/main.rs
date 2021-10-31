@@ -11,7 +11,9 @@ use crate::actors::orchestrator::Orchestrator;
 use crate::messages::entry::Entry;
 use actix::{Actor, SyncArbiter, System};
 use common::airlines::AIRLINES;
-use common::helper::{get_csv_file_path, get_max_requests_count};
+use common::helper::{
+    get_csv_file_path, get_log_file_name, get_log_output_path, get_max_requests_count,
+};
 use common::record::Record;
 use common::routs_stats::RoutsStats;
 use std::collections::HashMap;
@@ -21,12 +23,7 @@ use std::sync::Arc;
 use std::time::SystemTime;
 
 fn main() {
-    let file_name = format!(
-        "./logs/parte_b/{}.txt",
-        chrono::offset::Local::now()
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string()
-    );
+    let file_name = get_log_file_name(get_log_output_path("parte_b".to_string()));
     let file_logger = File::create(file_name).expect("Error creating logger file");
     let max_requests = get_max_requests_count() as usize;
     let path = get_csv_file_path();

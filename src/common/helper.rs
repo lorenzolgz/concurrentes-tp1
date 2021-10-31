@@ -1,6 +1,7 @@
 use crate::rout_info::RoutInfo;
 use std::{fs, io};
 
+/// Lets the user specify the number of max requests for each microservice of the airlines.
 pub fn get_max_requests_count() -> isize {
     let mut line = String::new();
     let default_max_requests = 5;
@@ -36,6 +37,7 @@ pub fn get_max_requests_count() -> isize {
     }
 }
 
+/// It allows the user to input the path to the csv otherwise to be processed
 pub fn get_csv_file_path() -> String {
     let mut line = String::new();
     let default_path = "./resources/reservations.csv".to_string();
@@ -75,6 +77,7 @@ pub fn fake_sleep(laps: isize) {
     }
 }
 
+/// It combers a vector of RoutInfos in a string format
 pub fn stringify_top_10(top_10: Vec<&RoutInfo>) -> String {
     let mut msg = "Top 10 more requested routs \n".to_string();
     for i in top_10 {

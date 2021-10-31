@@ -91,6 +91,7 @@ fn main() -> Result<(), csv::Error> {
     Ok(())
 }
 
+/// Every 10 seconds this function prints the top 10 most requested routs
 fn rout_stats_monitor(clone_rout_stats: Arc<Mutex<RoutsStats>>, log: Sender<String>) {
     loop {
         thread::sleep(Duration::from_secs(10));

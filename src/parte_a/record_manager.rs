@@ -9,8 +9,10 @@ use std::thread;
 use std::time::{Duration, Instant};
 use std_semaphore::Semaphore;
 
+/// This constant defines the success rate of the use of a airline service
 const AIRLINE_SERVER_SUCCESS_RATIO: f64 = 0.75;
 
+/// A struct made to simplify the request specified in the record
 pub struct RecordManager {
     record: Arc<Record>,
     airline_semaphore: Arc<Semaphore>,
@@ -20,6 +22,8 @@ pub struct RecordManager {
 }
 
 impl RecordManager {
+    /// Returns a new RecordManager, for that it needs the record, the airline semaphore, the pack
+    /// semaphore, the times vector, and the sending channel for the log
     pub fn new(
         record: Arc<Record>,
         sem: Arc<Semaphore>,
@@ -36,6 +40,8 @@ impl RecordManager {
         }
     }
 
+    /// Trys to make the reservation in the airline service and returns true if it was successful
+    /// and false otherwise.
     pub fn trigger_request(&self) -> bool {
         self.airline_semaphore.acquire();
         let random_millis = rand::thread_rng().gen_range(100..2_000);
@@ -57,6 +63,8 @@ impl RecordManager {
         is_success
     }
 
+    /// It trys to make the reservation expressed in the record until it's successful and make the
+    /// pack reservation if needed.
     pub fn trigger_requests_until_success(&self) {
         let now = Instant::now();
 
@@ -93,6 +101,7 @@ impl RecordManager {
     }
 }
 
+/// Returns the average time of all values in it
 fn average(numbers: RwLockWriteGuard<Vec<u128>>) -> f32 {
     numbers.iter().sum::<u128>() as f32 / numbers.len() as f32
 }

@@ -56,7 +56,7 @@ fn main() {
         let benchmark_service = Benchmark {
             finished_requests: 0,
             average_time: 0.0,
-            already_provided: false,
+            already_provided: true,
             stats: RoutsStats::new(),
             logger: logger.clone(),
         }

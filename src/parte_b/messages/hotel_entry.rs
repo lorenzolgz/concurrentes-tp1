@@ -13,3 +13,12 @@ pub struct HotelEntry {
     pub(crate) original_destination: String,
     pub(crate) original_start_time: SystemTime,
 }
+
+impl HotelEntry {
+    pub fn describe(&self) -> String {
+        format!(
+            "Origin: {}, Destination: {}",
+            self.original_origin, self.original_destination
+        )
+    }
+}

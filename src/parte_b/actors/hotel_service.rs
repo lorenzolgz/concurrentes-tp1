@@ -20,11 +20,13 @@ impl Handler<HotelEntry> for HotelService {
     type Result = ();
     fn handle(&mut self, msg: HotelEntry, _ctx: &mut SyncContext<Self>) -> Self::Result {
         self.logger.do_send(LogMessage {
-            log_entry: ("[HOTEL] recibi entry").to_string(),
+            log_entry: "[HOTEL] Got Hotel Entry Messsage || ".to_string() + &msg.describe(),
         });
         fake_sleep(thread_rng().gen_range(5000..7000));
         self.logger.do_send(LogMessage {
-            log_entry: ("[HOTEL] contesto success").to_string(),
+            log_entry: "[HOTEL] For Hotel Entry Messsage || ".to_string()
+                + &msg.describe()
+                + " || will reply successfully",
         });
         msg.sender
             .do_send(HotelSuccess {
@@ -44,7 +46,7 @@ impl Handler<HotelEntry> for HotelService {
             })
             .unwrap_or_else(|error| {
                 self.logger.do_send(LogMessage {
-                    log_entry: ("[HOTEL] HOTEL] Unable to send HotelSuccess back to sender, got error ".to_string() + &error.to_string()),
+                    log_entry: ("[HOTEL] Unable to send HotelSuccess back to sender, got error ".to_string() + &error.to_string()),
                 });
             });
     }

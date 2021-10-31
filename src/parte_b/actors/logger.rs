@@ -4,6 +4,8 @@ use actix::{Actor, Context, Handler};
 use std::fs::File;
 use std::io::Write;
 
+/// Actor in charge of receiving LogMessages to print them both in the standard output and in
+/// the log file kept in its state
 pub struct Logger {
     pub(crate) file: File,
 }

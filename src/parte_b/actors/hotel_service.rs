@@ -8,14 +8,18 @@ use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
 
+/// Struct Representing the Hotel's WebService
+/// The logger reference is kept for logging purposes
 pub struct HotelService {
     pub(crate) logger: Arc<Addr<Logger>>,
 }
 
+/// It's an Actor with SyncContext as it is instanced N times via SyncArbiter
 impl Actor for HotelService {
     type Context = SyncContext<Self>;
 }
 
+/// Handler of a HotelEntry, will always reply with HotelSuccess
 impl Handler<HotelEntry> for HotelService {
     type Result = ();
     fn handle(&mut self, msg: HotelEntry, _ctx: &mut SyncContext<Self>) -> Self::Result {

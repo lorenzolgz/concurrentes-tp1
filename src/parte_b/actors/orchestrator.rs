@@ -19,6 +19,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
+/// Main Actor of the service, is in charge of handling an Entry's flow from the beginning
+/// by forwarding to the AeroService, later on to the Hotel (if applicable) and at last
+/// to the Benchmark for metric purposes
 pub struct Orchestrator {
     pub(crate) aeroservices: HashMap<String, Addr<AeroService>>,
     pub(crate) hotel: Addr<HotelService>,
@@ -30,6 +33,8 @@ impl Actor for Orchestrator {
     type Context = Context<Self>;
 }
 
+/// Forwards Entry message to the required airline AeroService
+/// If such airline is not found, the message is ignored
 impl Handler<Entry> for Orchestrator {
     type Result = ();
 
@@ -49,7 +54,8 @@ impl Handler<Entry> for Orchestrator {
         );
     }
 }
-
+/// Depending on the original Entry it will either
+/// send HotelEntry to Hotel or send RequestCompleted to Benchmark
 impl Handler<AeroSuccess> for Orchestrator {
     type Result = ();
 
@@ -75,6 +81,8 @@ impl Handler<AeroSuccess> for Orchestrator {
     }
 }
 
+/// Will wait a random amount of time and will re-send the original Entry back to the
+/// required AeroService
 impl Handler<AeroFailed> for Orchestrator {
     type Result = ResponseActFuture<Self, ()>;
 
@@ -125,6 +133,7 @@ impl Handler<AeroFailed> for Orchestrator {
     }
 }
 
+/// Will send a RequestCompleted to Benchmark
 impl Handler<HotelSuccess> for Orchestrator {
     type Result = ();
 

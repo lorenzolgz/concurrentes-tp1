@@ -9,15 +9,20 @@ use common::helper::fake_sleep;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
 
+/// Struct Representing an Airline's WebService
+/// Its id identifies the airline and the logger reference is kept for logging purposes
 pub struct AeroService {
     pub(crate) id: String,
     pub(crate) logger: Arc<Addr<Logger>>,
 }
 
+/// It's an Actor with SyncContext as it is instanced N times via SyncArbiter
 impl Actor for AeroService {
     type Context = SyncContext<Self>;
 }
 
+/// Handler of an Entry, that ends up replying either an AeroSuccess or an AeroFailed
+/// back to the Orchestrator
 impl Handler<Entry> for AeroService {
     type Result = ();
     fn handle(&mut self, msg: Entry, _ctx: &mut SyncContext<Self>) -> Self::Result {

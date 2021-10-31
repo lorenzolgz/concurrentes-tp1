@@ -9,6 +9,8 @@ use common::helper::stringify_top_10;
 use common::routs_stats::RoutsStats;
 use std::time::Duration;
 
+/// Struct Representing a Metrics Benchmark
+/// Its state fields are used to maintain performance and request metrics
 pub struct Benchmark {
     pub(crate) finished_requests: u128,
     pub(crate) average_time: f64,
@@ -20,7 +22,8 @@ pub struct Benchmark {
 impl Actor for Benchmark {
     type Context = Context<Self>;
 }
-
+/// By Receiving a RequestCompleted will try to update the
+/// average_time and the RoutsStats
 impl Handler<RequestCompleted> for Benchmark {
     type Result = ();
     fn handle(&mut self, msg: RequestCompleted, _ctx: &mut Context<Self>) -> Self::Result {
@@ -43,6 +46,8 @@ impl Handler<RequestCompleted> for Benchmark {
     }
 }
 
+/// By Receiving a ProvideMetrics it will print its current
+/// state metrics
 impl Handler<ProvideMetrics> for Benchmark {
     type Result = ();
     fn handle(&mut self, _msg: ProvideMetrics, _ctx: &mut Context<Self>) -> Self::Result {
@@ -66,7 +71,7 @@ impl Handler<ProvideMetrics> for Benchmark {
         }
     }
 }
-
+/// Extraction of the average time recalculation based on a new duration
 impl Benchmark {
     fn update_average_time(&mut self, elapsed_time: Duration) {
         let updated_finished_count = self.finished_requests + 1;

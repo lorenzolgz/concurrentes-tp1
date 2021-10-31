@@ -34,16 +34,16 @@ impl Handler<Entry> for Orchestrator {
     type Result = ();
 
     fn handle(&mut self, msg: Entry, _ctx: &mut Context<Self>) -> Self::Result {
+        let airline_key = msg.aero_id.clone();
         self.logger.do_send(LogMessage {
             log_entry: ("[ORCHESTRATOR] Got Entry Message || ".to_string() + &msg.describe()),
         });
-        self.aeroservices.get(&msg.aero_id).map_or_else(
+        self.aeroservices.get(&airline_key).map_or_else(
             || {
                 self.logger.do_send(LogMessage {
-                    log_entry: ("[ORCHESTRATOR] Unable to find aeroservice for an airline "
-                        .to_string()),
+                    log_entry: "[ORCHESTRATOR] Unable to find aeroservice for airline ".to_string()
+                        + &airline_key,
                 });
-                // TODO imprimir tambien el aero_id
             },
             |aero_service| aero_service.do_send(msg),
         );

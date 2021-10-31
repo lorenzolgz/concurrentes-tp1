@@ -24,7 +24,7 @@ impl Handler<Entry> for AeroService {
         self.logger.do_send(LogMessage {
             log_entry: ("[AEROSERVICE ".to_string()
                 + &self.id.to_string()
-                + &"] Got Entry Message ".to_string()
+                + "] Got Entry Message || "
                 + &msg.describe()),
         });
         fake_sleep(thread_rng().gen_range(5000..7000));
@@ -33,17 +33,20 @@ impl Handler<Entry> for AeroService {
         self.logger.do_send(LogMessage {
             log_entry: ("[AEROSERVICE ".to_string()
                 + &self.id.to_string()
-                + &"] contesto is_success=".to_string()
+                + "] For Entry Message || "
+                + &msg.describe()
+                + " || will reply with is_success="
                 + &is_success.to_string()),
         });
 
         let orchestrator = msg.sender.clone();
         let elapsed_time = msg.start_time.elapsed();
+        let ref_msg = Arc::from(msg);
         if is_success {
             orchestrator
                 .try_send(AeroSuccess {
                     aero_id: self.id.to_string(),
-                    original_message: Arc::from(msg),
+                    original_message: ref_msg.clone(),
                     elapsed_time: elapsed_time.map_or_else(
                         |error| {
                             self.logger.do_send(LogMessage {
@@ -61,15 +64,16 @@ impl Handler<Entry> for AeroService {
                     self.logger.do_send(LogMessage {
                         log_entry: ("[AEROSERVICE ".to_string()
                             + &self.id.to_string()
-                            + &"] Unable to send AeroSuccess back to sender, got error"
-                                .to_string()
+                            + "] For Entry Message || "
+                            + &ref_msg.describe()
+                            + " Unable to send AeroSuccess back to sender, got error"
                             + &error.to_string()),
                     });
                 });
         } else {
             orchestrator
                 .try_send(AeroFailed {
-                    original_message: Arc::from(msg),
+                    original_message: ref_msg.clone(),
                     aero_reference: _ctx.address().recipient(),
                     aero_id: self.id.to_string(),
                 })
@@ -77,7 +81,9 @@ impl Handler<Entry> for AeroService {
                     self.logger.do_send(LogMessage {
                         log_entry: ("[AEROSERVICE ".to_string()
                             + &self.id.to_string()
-                            + &"] Unable to send AeroFailed back to sender, got error".to_string()
+                            + "] For Entry Message || "
+                            + &ref_msg.describe()
+                            + " Unable to send AeroFailed back to sender, got error"
                             + &error.to_string()),
                     });
                 });

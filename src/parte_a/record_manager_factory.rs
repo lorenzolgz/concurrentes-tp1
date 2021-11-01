@@ -26,7 +26,7 @@ impl RecordManagerFactory {
                 .insert(airline.to_string(), Arc::new(Semaphore::new(max_requests)));
         }
 
-        let package_semaphore = Arc::new(Semaphore::new(3));
+        let package_semaphore = Arc::new(Semaphore::new(max_requests));
 
         let times = Arc::new(RwLock::new(Vec::new()));
 

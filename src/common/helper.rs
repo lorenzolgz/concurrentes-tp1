@@ -1,7 +1,7 @@
 use crate::rout_info::RoutInfo;
 use std::{fs, io};
 
-/// Lets the user specify the number of max requests for each microservice of the airlines.
+/// Lets the user specify the number of max requests for each webservice
 pub fn get_max_requests_count() -> isize {
     let mut line = String::new();
     let default_max_requests = 5;

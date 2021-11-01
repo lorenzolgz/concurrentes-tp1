@@ -44,7 +44,18 @@ impl RecordManager {
     /// and false otherwise.
     pub fn trigger_request(&self) -> bool {
         self.airline_semaphore.acquire();
-        let random_millis = rand::thread_rng().gen_range(100..2_000);
+        log_info(
+            format!(
+                "[{:?}] Aqcuired semaphore for record | Origin: {}, Destination: {}, Airline: {}, Package: {}",
+                thread::current().id(),
+                self.record.origin,
+                self.record.destination,
+                self.record.airline,
+                self.record.package
+            ),
+            self.log_send.clone(),
+        );
+        let random_millis = rand::thread_rng().gen_range(2_000..5_000);
         let is_success = rand::thread_rng().gen_bool(AIRLINE_SERVER_SUCCESS_RATIO);
         thread::sleep(Duration::from_millis(random_millis));
         log_info(
